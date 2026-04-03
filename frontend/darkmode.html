@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimelessPages - Dark Mode</title>
+    <link rel="stylesheet" href="darkmode.css">
+    <!-- load early to prevent flash -->
+    <script src="darkmode.js"></script>
+</head>
+
+<body>
+    <!-- ─── Header ─── -->
+    <header class="dm-header">
+        <div class="dm-header-inner">
+            <a href="index.html" class="dm-brand">TimelessPages.</a>
+
+            <nav class="dm-nav">
+                <a href="home.html">Home</a>
+                <a href="book.html">Books</a>
+                <a href="#">About</a>
+
+                <!-- Toggle Switch -->
+                <div class="dm-toggle-wrapper">
+                    <span class="dm-toggle-label">Theme</span>
+                    <label class="dm-toggle" aria-label="Toggle dark mode">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="dm-toggle-track"></span>
+                        <span class="dm-toggle-knob">
+                            <span class="icon-sun">☀️</span>
+                            <span class="icon-moon">🌙</span>
+                        </span>
+                    </label>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ─── Hero ─── -->
+    <section class="dm-hero">
+        <h1>Read in <span>Any Light</span></h1>
+        <p>Toggle between light and dark mode for a comfortable reading experience — day or night.</p>
+        <a href="home.html" class="dm-hero-btn">Browse Collection</a>
+    </section>
+
+    <!-- ─── Features ─── -->
+    <section class="dm-section">
+        <h2>Why Dark Mode?</h2>
+        <div class="dm-cards">
+            <article class="dm-card">
+                <div class="dm-card-icon">👁️</div>
+                <h3>Reduced Eye Strain</h3>
+                <p>Dark backgrounds emit less light, keeping your eyes relaxed during long reading sessions at night.</p>
+            </article>
+            <article class="dm-card">
+                <div class="dm-card-icon">🔋</div>
+                <h3>Save Battery</h3>
+                <p>On OLED displays, dark pixels use less power — extending your device battery while you browse.</p>
+            </article>
+            <article class="dm-card">
+                <div class="dm-card-icon">🎨</div>
+                <h3>Modern Aesthetic</h3>
+                <p>A sleek dark interface gives TimelessPages a premium, distraction-free look that feels elegant.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- ─── Demo Section ─── -->
+    <section class="dm-section">
+        <h2>Sample Book Cards</h2>
+        <div class="dm-cards">
+            <article class="dm-card">
+                <div class="dm-card-icon">📖</div>
+                <h3>War and Peace</h3>
+                <p>Leo Tolstoy's sweeping epic of Russian society during the Napoleonic era — a timeless masterpiece.</p>
+            </article>
+            <article class="dm-card">
+                <div class="dm-card-icon">📚</div>
+                <h3>Origin of Species</h3>
+                <p>Charles Darwin's groundbreaking work that introduced the theory of evolution by natural selection.</p>
+            </article>
+            <article class="dm-card">
+                <div class="dm-card-icon">📕</div>
+                <h3>The Blind Watchmaker</h3>
+                <p>Richard Dawkins makes a compelling case for the power of natural selection in shaping life on earth.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer class="dm-footer">
+        &copy; 2026 TimelessPages. Dark mode preference saved automatically.
+    </footer>
+</body>
+
+</html>

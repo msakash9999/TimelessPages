@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TimelessPages</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <a href="index.html" class="sidebar-brand">
+            TimelessPages.
+            <span>Admin Dashboard</span>
+        </a>
+
+        <nav class="sidebar-nav">
+            <button class="sidebar-link active" data-section="dashboard">
+                <span class="nav-icon">📊</span> Dashboard
+            </button>
+            <button class="sidebar-link" data-section="users">
+                <span class="nav-icon">👥</span> User Management
+            </button>
+            <button class="sidebar-link" data-section="products">
+                <span class="nav-icon">📚</span> Products
+            </button>
+            <button class="sidebar-link" data-section="add-book">
+                <span class="nav-icon">➕</span> Add Book
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="index.html" class="sidebar-link">
+                <span class="nav-icon">🌐</span> View Site
+            </a>
+            <button class="sidebar-link" id="adminLogoutButton">
+                <span class="nav-icon">🚪</span> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Welcome, <span id="adminName">Admin</span></h1>
+            <span class="admin-badge">🔐 Admin</span>
+        </div>
+
+        <!-- ── Stats ── -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value" id="statBooks">0</div>
+                <div class="stat-label">Total Books</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-value" id="statBuyers">0</div>
+                <div class="stat-label">Buyers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏪</div>
+                <div class="stat-value" id="statSellers">0</div>
+                <div class="stat-label">Sellers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚫</div>
+                <div class="stat-value" id="statBlocked">0</div>
+                <div class="stat-label">Blocked Users</div>
+            </div>
+        </div>
+
+        <!-- ════════ SECTION: DASHBOARD ════════ -->
+        <div class="section-panel active" id="section-dashboard">
+            <div class="panel-card">
+                <h2>Recent Activity</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTable">
+                        <tr><td colspan="4" style="color:var(--db-muted)">Activity will appear here.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════ SECTION: USER MANAGEMENT ════════ -->
+        <div class="section-panel" id="section-users">
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="buyers">👤 Buyers</button>
+            <button class="tab-btn" data-tab="sellers">🏪 Sellers</button>
+        </div>
+
+        <!-- Buyers Tab -->
+        <div class="tab-content active" id="tab-buyers">
+            <div class="panel-card">
+                <div class="list-head">
+                    <h2>All Buyers</h2>
+                    <button class="secondary-btn" id="refreshBuyers">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="buyersTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sellers Tab -->
+        <div class="tab-content" id="tab-sellers" style="display:none">
+            <div class="panel-card">
+                <div class="list-head">
+                    <h2>All Sellers</h2>
+                    <button class="secondary-btn" id="refreshSellers">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Products</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sellersTable"></tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+
+        <!-- ════════ SECTION: PRODUCTS ════════ -->
+        <div class="section-panel" id="section-products">
+            <div class="panel-card">
+                <div class="list-head">
+                    <h2>All Books</h2>
+                    <button class="secondary-btn" id="refreshBooksButton">Refresh</button>
+                </div>
+                <p id="booksMessage" class="panel-message" aria-live="polite"></p>
+                <div id="booksList" class="books-list"></div>
+            </div>
+        </div>
+
+        <!-- ════════ SECTION: ADD BOOK ════════ -->
+        <div class="section-panel" id="section-add-book">
+            <div class="panel-card">
+                <h2>Add New Book</h2>
+                <form id="bookForm" class="admin-form">
+                    <div class="form-row">
+                        <input type="text" id="bookTitle" placeholder="Book Title" required>
+                        <input type="text" id="bookAuthor" placeholder="Author Name" required>
+                    </div>
+                    <div class="form-row">
+                        <input type="number" id="bookPrice" placeholder="Price (₹)" min="1" required>
+                        <select id="bookCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="story">Story</option>
+                            <option value="novels">Novels</option>
+                            <option value="philosophy">Philosophy</option>
+                            <option value="history">History</option>
+                            <option value="religious">Religious</option>
+                            <option value="comics">Comics</option>
+                            <option value="science">Science</option>
+                        </select>
+                    </div>
+                    <label class="form-label">Book Cover Image</label>
+                    <input type="file" id="bookImageFile" accept="image/*">
+                    <span class="form-hint">— or paste an image URL below —</span>
+                    <input type="text" id="bookImageUrl" placeholder="Image URL (optional if file chosen)">
+                    <textarea id="bookDescription" placeholder="Short description"></textarea>
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="bookFeatured">
+                        <span>Show in featured section</span>
+                    </label>
+                    <button type="submit" class="primary-btn">Add Book</button>
+                </form>
+                <p id="adminFormMessage" class="panel-message" aria-live="polite"></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="admin.js?v=3"></script>
+</body>
+</html>

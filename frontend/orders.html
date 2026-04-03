@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - TimelessPages</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="orders.css">
+</head>
+<body>
+    <main class="page">
+        <section class="hero-shell">
+            <nav class="top-nav">
+                <a href="index.html" class="brand">TimelessPages</a>
+                <div class="menu">
+                    <a href="home.html">Home</a>
+                    <div class="menu-item books-menu">
+                        <a href="book.html" class="books-link">Books</a>
+                        <div class="books-dropdown">
+                            <a href="Philosophybooks.html">Philosophy</a>
+                            <a href="storybooks.html">Story Books</a>
+                            <a href="novels.html">Novels</a>
+                            <a href="historybooks.html">History</a>
+                            <a href="science.html">Science</a>
+                            <a href="academicbooks.html">Academic Books</a>
+                            <a href="Religiousbooks.html">Religious Books</a>
+                            <a href="comics.html">Comics</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="session-box">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </nav>
+
+            <header class="hero-copy">
+                <h1>My Orders.</h1>
+                <p>Track your literary journey and past acquisitions.</p>
+            </header>
+
+            <section class="orders-section">
+                <div id="ordersList" class="orders-list">
+                    <div class="loading-state">
+                        <p>Loading your orders...</p>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="catalog.js"></script>
+    <script src="orders.js"></script>
+</body>
+</html>

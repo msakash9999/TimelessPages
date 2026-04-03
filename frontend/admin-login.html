@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - TimelessPages</title>
+    <link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+    <div class="admin-login-wrap">
+        <div class="admin-login-card">
+            <div class="admin-login-badge">🔐 Admin Access</div>
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to the TimelessPages admin dashboard.</p>
+
+            <form id="adminLoginForm" class="admin-login-form">
+                <div class="form-group">
+                    <label for="adminEmail">Email Address</label>
+                    <input type="email" id="adminEmail" placeholder="admin@timelesspages.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="admin-submit-btn">Sign In to Dashboard</button>
+            </form>
+
+            <p id="adminMessage" class="admin-login-message" aria-live="polite"></p>
+
+            <div class="admin-login-hint">
+                Default: <strong>admin@timelesspages.com</strong> / <strong>admin123</strong>
+            </div>
+
+            <div class="admin-login-footer">
+                <a href="index.html">← Back to TimelessPages</a>
+            </div>
+        </div>
+    </div>
+    <script src="admin-login.js"></script>
+</body>
+</html>

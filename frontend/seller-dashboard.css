@@ -1,0 +1,236 @@
+:root {
+    --bg-color: #0d1117;
+    --panel-bg: #161b22;
+    --text-main: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #3182ce;
+    --border: #30363d;
+    --danger: #f85149;
+    --success: #2ea043;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+/* Navbar */
+.seller-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.seller-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+}
+
+.seller-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.seller-greeting {
+    color: var(--text-muted);
+}
+
+.logout-btn {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+.visit-site-btn {
+    background: var(--panel-bg);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.visit-site-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+}
+
+.panel-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.panel-card h2 {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+/* Form Styling */
+.seller-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row input,
+.form-row select {
+    flex: 1;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin: -0.5rem 0;
+}
+
+.primary-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.primary-btn:hover {
+    background: var(--accent-hover);
+}
+
+.panel-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    display: none;
+    text-align: center;
+}
+
+.panel-message.success {
+    display: block;
+    background: rgba(46, 160, 67, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(46, 160, 67, 0.2);
+}
+
+.panel-message.error {
+    display: block;
+    background: rgba(248, 81, 73, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(248, 81, 73, 0.2);
+}
+
+/* My Books List Placeholder */
+#booksList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.mini-book-card {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.mini-book-card img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.mini-book-card h3 {
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 0.25rem;
+}
+
+.mini-book-card .price {
+    color: var(--accent);
+    font-weight: 600;
+}

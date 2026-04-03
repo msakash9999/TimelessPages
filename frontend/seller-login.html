@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Portal - TimelessPages</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div class="auth-page">
+    <!-- Left Panel -->
+    <div class="auth-left">
+        <a href="index.html" class="brand-link">TimelessPages.</a>
+        <div class="auth-left-content">
+            <h1>Sell. Reach.<br>Grow.</h1>
+            <p>Join the TimelessPages marketplace. Reach thousands of book lovers globally and grow your literary business.</p>
+            <div class="auth-stats">
+                <div class="stat"><span class="stat-num">0%</span><span class="stat-lbl">Listing Fee</span></div>
+                <div class="stat"><span class="stat-num">24/7</span><span class="stat-lbl">Support</span></div>
+                <div class="stat"><span class="stat-num">Fast</span><span class="stat-lbl">Payouts</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="auth-right">
+        <!-- Tab switcher -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Seller Login</button>
+            <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Register Store</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="auth-form-wrap" id="loginPanel">
+            <h2>Welcome back, Partner</h2>
+            <p class="auth-sub">Access your seller dashboard</p>
+            <form id="loginForm" novalidate>
+                <div class="field">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="store@example.com" required>
+                </div>
+                <div class="field">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <p id="loginMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="loginBtn">Access Dashboard</button>
+            </form>
+            <p class="switch-hint">Want to start selling? <button class="link-btn" onclick="switchTab('signup')">Register →</button></p>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div class="auth-form-wrap hidden" id="signupPanel">
+            <h2>Partner With Us</h2>
+            <p class="auth-sub">Set up your bookstore today</p>
+            <form id="signupForm" novalidate>
+                <div class="field">
+                    <label for="signupName">Your Full Name</label>
+                    <input type="text" id="signupName" placeholder="Manager Name" required>
+                </div>
+                <div class="field">
+                    <label for="signupEmail">Business Email</label>
+                    <input type="email" id="signupEmail" placeholder="contact@bookshop.com" required>
+                </div>
+                <div class="field">
+                    <label for="signupStore">Store Name</label>
+                    <input type="text" id="signupStore" placeholder="e.g. Classic Reads Ltd." required>
+                </div>
+                <div class="field">
+                    <label for="signupPassword">Create Password</label>
+                    <input type="password" id="signupPassword" placeholder="Minimum 6 characters" required>
+                </div>
+                <p id="signupMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="signupBtn">Create Store Account</button>
+            </form>
+            <p class="switch-hint">Already a partner? <button class="link-btn" onclick="switchTab('login')">Log in →</button></p>
+        </div>
+    </div>
+</div>
+
+<script src="seller-login.js"></script>
+</body>
+</html>

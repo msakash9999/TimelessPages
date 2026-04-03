@@ -1,0 +1,135 @@
+.orders-section {
+    padding: 12px 36px 60px;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 900px;
+}
+
+.order-card {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    overflow: hidden;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.order-card:hover {
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+}
+
+.order-header {
+    background: #fcfcfc;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px;
+}
+
+.order-header-info span {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.order-header-info p {
+    margin: 0;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.order-status-badge {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.status-confirmed { background: #e0f2f1; color: #00695c; }
+.status-shipped { background: #fff3e0; color: #e65100; }
+.status-delivered { background: #e8f5e9; color: #1b5e20; }
+.status-cancelled { background: #ffebee; color: #b71c1c; }
+
+.order-body {
+    padding: 24px;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.order-item img {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #f5f5f5;
+}
+
+.order-item-info {
+    flex: 1;
+}
+
+.order-item-info h4 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text);
+}
+
+.order-item-info p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 80px 20px;
+    background: #fff;
+    border-radius: 22px;
+    border: 1px dashed #dddddd;
+}
+
+.empty-orders h3 {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+.empty-orders p {
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+    .order-header {
+        grid-template-columns: 1fr 1fr;
+    }
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up - TimelessPages</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<div class="auth-page">
+
+    <!-- Left Panel -->
+    <div class="auth-left">
+        <a href="index.html" class="brand-link">TimelessPages.</a>
+        <div class="auth-left-content">
+            <h1>Read. Collect.<br>Discover.</h1>
+            <p>Your personal book universe — thousands of titles across every genre, curated for curious minds.</p>
+            <div class="auth-stats">
+                <div class="stat"><span class="stat-num">10K+</span><span class="stat-lbl">Books</span></div>
+                <div class="stat"><span class="stat-num">50+</span><span class="stat-lbl">Genres</span></div>
+                <div class="stat"><span class="stat-num">Free</span><span class="stat-lbl">Wishlist</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="auth-right">
+
+        <!-- Tab switcher -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+            <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="auth-form-wrap" id="loginPanel">
+            <h2>Welcome back</h2>
+            <p class="auth-sub">Sign in with your email address</p>
+            <form id="loginForm" novalidate>
+                <div class="field">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="field">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <p id="loginMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="loginBtn">Sign In</button>
+            </form>
+            <p class="switch-hint">Don't have an account? <button class="link-btn" onclick="switchTab('signup')">Create one →</button></p>
+            <p class="admin-link"><a href="admin-login.html">Admin login</a></p>
+        </div>
+
+        <!-- SIGN UP FORM -->
+        <div class="auth-form-wrap hidden" id="signupPanel">
+            <h2>Create account</h2>
+            <p class="auth-sub">Join TimelessPages for free</p>
+            <form id="signupForm" novalidate>
+                <div class="field">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="Your full name" required>
+                </div>
+                <div class="field">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="field">
+                    <label for="signupPhone">Phone Number</label>
+                    <input type="tel" id="signupPhone" placeholder="Your phone number" required>
+                </div>
+                <div class="field">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Minimum 6 characters" required>
+                </div>
+                <div class="field">
+                    <label for="signupAge">Age</label>
+                    <input type="number" id="signupAge" placeholder="Your age" min="1" max="120" required>
+                </div>
+                <p id="signupMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="signupBtn">Create Account</button>
+            </form>
+            <p class="switch-hint">Already have an account? <button class="link-btn" onclick="switchTab('login')">Sign in →</button></p>
+            <p class="admin-link"><a href="admin-login.html">Admin login</a></p>
+        </div>
+
+        <!-- OTP FORM -->
+        <div class="auth-form-wrap hidden" id="otpPanel">
+            <h2>Verify It's You</h2>
+            <p class="auth-sub" id="otpSub">An incorrect password was entered. We sent a 6-digit verification code to your email.</p>
+            <form id="otpForm" novalidate>
+                <div class="field">
+                    <label for="otpCode">6-Digit Code</label>
+                    <input type="text" id="otpCode" placeholder="Enter OTP from email" required maxlength="6" pattern="\d{6}">
+                </div>
+                <div class="field">
+                    <label for="resetPassword">New Password</label>
+                    <input type="password" id="resetPassword" placeholder="Enter new password" required>
+                </div>
+                <p id="otpMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="otpBtn">Verify & Reset Password</button>
+            </form>
+            <p class="switch-hint">Didn't get it? <button type="button" class="link-btn" id="resendOtpBtn">Resend Code</button></p>
+            <p class="switch-hint">Back to <button type="button" class="link-btn" onclick="switchTab('login')">Login</button></p>
+        </div>
+
+    </div>
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>

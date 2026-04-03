@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════
+   Academic Books – Department Tabs
+   ═══════════════════════════════════ */
+
+.dept-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 28px;
+    margin: 24px 0 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.dept-tab {
+    padding: 12px 24px;
+    border: 2px solid #e0d5c5;
+    border-radius: 999px;
+    background: #fff;
+    color: #5a4e3d;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s ease;
+}
+
+.dept-tab:hover {
+    background: #fdf3e2;
+    border-color: #d4af37;
+    color: #b85c21;
+}
+
+.dept-tab.active {
+    background: #b85c21;
+    border-color: #b85c21;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(184, 92, 33, .25);
+}
+
+.dept-section {
+    display: none;
+}
+
+.dept-section.active {
+    display: block;
+    animation: fadeSection .4s ease;
+}
+
+@keyframes fadeSection {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dept-section .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 0 28px 40px;
+}
+
+.dept-section .product-card {
+    position: relative;
+    border-radius: 20px;
+    padding: 16px;
+    background: #faf6ef;
+    border: 1px solid #e7d8c3;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.dept-section .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .1);
+}
+
+.dept-section .product-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #fff;
+    margin-bottom: 12px;
+}
+
+.dept-section .product-card h3 {
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: #1f1811;
+}
+
+.dept-section .product-card p {
+    font-size: 13px;
+    color: #7b6a59;
+    margin: 0 0 6px;
+}
+
+.dept-section .product-card strong {
+    display: block;
+    font-size: 18px;
+    color: #b85c21;
+    margin-bottom: 10px;
+}
+
+.dept-section .wishlist-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, .85);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
+}
+
+.dept-section .wishlist-top:hover {
+    background: #fff;
+}
+
+.dept-section .storybook-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.dept-section .storybook-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.dept-section .storybook-btn.buy-btn {
+    background: #b85c21;
+    border: none;
+    color: #fff;
+}
+
+.dept-section .storybook-btn.buy-btn:hover {
+    background: #d4701e;
+}
+
+.dept-section .storybook-btn.cart-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #5a4e3d;
+}
+
+.dept-section .storybook-btn.cart-btn:hover {
+    border-color: #b85c21;
+    color: #b85c21;
+}
+
+/* ── Dark Mode ── */
+[data-theme="dark"] .dept-tab {
+    background: #1a1a1a;
+    border-color: #333;
+    color: #c0b9a8;
+}
+
+[data-theme="dark"] .dept-tab:hover {
+    background: #252525;
+    border-color: #d4af37;
+    color: #d4af37;
+}
+
+[data-theme="dark"] .dept-tab.active {
+    background: #d4af37;
+    border-color: #d4af37;
+    color: #111;
+}
+
+[data-theme="dark"] .dept-section .product-card {
+    background: #252525;
+    border: 2px solid #d4af37;
+    box-shadow: 0 4px 20px rgba(212, 175, 55, .12);
+}
+
+[data-theme="dark"] .dept-section .product-card:hover {
+    border-color: #e6c34d;
+    box-shadow: 0 8px 28px rgba(212, 175, 55, .25);
+}
+
+[data-theme="dark"] .dept-section .product-card h3 {
+    color: #f5f2eb;
+}
+
+[data-theme="dark"] .dept-section .product-card p {
+    color: #b0aaa0;
+}
+
+[data-theme="dark"] .dept-section .product-card strong {
+    color: #d4af37;
+}
+
+[data-theme="dark"] .dept-section .product-card img {
+    background: #161616;
+}
+
+[data-theme="dark"] .dept-section .wishlist-top {
+    background: rgba(30, 30, 30, .85);
+    color: #c0b9a8;
+}
+
+[data-theme="dark"] .dept-section .storybook-btn.cart-btn {
+    background: #252525;
+    border-color: #444;
+    color: #e0dbd0;
+}
+
+[data-theme="dark"] .dept-section .storybook-btn.cart-btn:hover {
+    border-color: #d4af37;
+    color: #d4af37;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .dept-tabs {
+        gap: 6px;
+        padding: 0 16px;
+    }
+
+    .dept-tab {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .dept-section .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 16px 28px;
+    }
+}

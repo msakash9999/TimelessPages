@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimelessPages - Books</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="darkmode.css">
+    <script src="darkmode.js"></script>
+</head>
+<body data-book-category="">
+    <main class="page">
+        <section class="hero-shell">
+            <nav class="top-nav">
+                <a href="index.html" class="brand">TimelessPages.</a>
+                <div class="menu">
+                    <a href="home.html">Home</a>
+                    <a href="#">New &amp; Featured</a>
+                    <a href="#">Collections</a>
+                    <div class="menu-item books-menu">
+                        <a href="book.html" class="books-link">Books</a>
+                        <div class="books-dropdown">
+                            <a href="Philosophybooks.html">Philosophy</a>
+                            <a href="storybooks.html">Story Books</a>
+                            <a href="novels.html">Novels</a>
+                            <a href="historybooks.html">History</a>
+                            <a href="science.html">Science</a>
+                            <a href="academicbooks.html">Academic Books</a>
+                            <a href="Religiousbooks.html">Religious Books</a>
+                            <a href="comics.html">Comics</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="session-box">
+                        <a href="login.html" id="loginLink">Login</a>
+                    </div>
+                    <div class="dm-toggle-wrapper">
+                        <label class="dm-toggle" aria-label="Toggle dark mode">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="dm-toggle-track"></span>
+                            <span class="dm-toggle-knob">
+                                <span class="icon-sun">☀️</span>
+                                <span class="icon-moon">🌙</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </nav>
+
+            <header class="hero-copy">
+                <h1>Express Your Story Through Books.</h1>
+                <p>Find handpicked classics and bold modern reads for every mood.</p>
+            </header>
+
+            <section class="featured">
+                <div class="featured-bg"></div>
+                <img src="assets/originOfSpecies.png" alt="Featured book cover" class="featured-book">
+                <div class="star-dot"></div>
+            </section>
+
+            <section class="products">
+                <div class="products-head">
+                    <h2>Popular Product</h2>
+                </div>
+                <div class="product-grid">
+                    <article class="product-card">
+                        <img src="assets/originOfSpecies.png" alt="Origin of Species">
+                        <h3>Origin of Species</h3>
+                        <p>Classic Edition</p>
+                    </article>
+                    <article class="product-card">
+                        <img src="assets/richardDawkins.png" alt="The Blind Watchmaker">
+                        <h3>The Blind Watchmaker</h3>
+                        <p>Science Collection</p>
+                    </article>
+                    <article class="product-card">
+                        <img src="assets/warAndPeace.png" alt="War and Peace">
+                        <h3>War and Peace</h3>
+                        <p>Literary Collection</p>
+                    </article>
+                </div>
+            </section>
+        </section>
+    </main>
+    <script src="dropdown.js"></script>
+    <script src="catalog.js"></script>
+</body>
+</html>
