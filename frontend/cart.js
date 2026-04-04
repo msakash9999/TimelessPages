@@ -282,13 +282,13 @@ function createCartDrawer() {
     .cd-item-info .cd-price{color:#c9a84c;font-weight:700;font-size:14px;}
     .cd-qty{display:flex;align-items:center;gap:8px;margin-top:8px;}
     .cd-qty button{background:#2a2822;border:none;color:#f5f0eb;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
-    .cd-qty button:hover{background:#8B7355;}
+    .cd-qty button:hover{background:#f58117;}
     .cd-qty span{color:#f5f0eb;min-width:20px;text-align:center;font-size:14px;}
     .cd-item-del{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:18px;padding:4px;flex-shrink:0;}
     .cd-item-del:hover{color:#ff6b6b;}
     .cart-drawer .cd-foot{padding:20px 24px;border-top:1px solid #333;}
     .cart-drawer .cd-total{display:flex;justify-content:space-between;margin-bottom:16px;color:#f5f0eb;font-size:16px;font-weight:600;}
-    .cart-drawer .cd-checkout{display:block;width:100%;padding:14px;background:#8B7355;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;text-align:center;transition:background .2s;}
+    .cart-drawer .cd-checkout{display:block;width:100%;padding:14px;background:#f58117;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;text-align:center;transition:background .2s;}
     .cart-drawer .cd-checkout:hover{background:#a08060;}
     .cd-empty{text-align:center;color:#777;padding:60px 20px;font-size:15px;}
   `;
@@ -352,14 +352,14 @@ function createCartDrawer() {
               .checkout-title { font-weight: 700; color: #333; margin-bottom: 15px; display: block; font-size: 16px; }
               .addr-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
               .pay-option { display: flex; align-items: center; padding: 12px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-              .pay-option:hover { border-color: #8B7355; background: #fdfaf7; }
-              .pay-option input { margin-right: 12px; accent-color: #8B7355; }
-              .pay-option.selected { border-color: #8B7355; background: #fdfaf7; }
-              .checkout-btn { width: 100%; padding: 14px; background: #8B7355; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-              .checkout-btn:hover { background: #6F5B44; transform: translateY(-2px); }
+              .pay-option:hover { border-color: #f58117; background: #fffaf5; }
+              .pay-option input { margin-right: 12px; accent-color: #f58117; }
+              .pay-option.selected { border-color: #f58117; background: #fffaf5; }
+              .checkout-btn { width: 100%; padding: 14px; background: #f58117; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+              .checkout-btn:hover { background: #e67600; transform: translateY(-2px); }
               .checkout-btn:disabled { background: #ccc; cursor: not-allowed; }
             </style>
-            <div style="background:#8B7355;color:#fff;padding:25px;text-align:center;">
+            <div style="background:#f58117;color:#fff;padding:25px;text-align:center;">
               <h2 style="margin:0;font-size:22px;">Complete Your Order</h2>
               <p style="margin:5px 0 0;font-size:15px;opacity:0.9;">Total Payable: <strong>₹${amount.toLocaleString('en-IN')}</strong></p>
             </div>
@@ -387,16 +387,13 @@ function createCartDrawer() {
                   <div style="font-size:12px; color:#777;">Card, UPI, Net Banking</div>
                 </div>
               </label>
-              <label class="pay-option">
-                <input type="radio" name="pay-method" value="COD">
-                <div>
-                  <div style="font-weight:600; color:#333; display:flex; align-items:center; gap:8px;">
-                    Cash on Delivery (COD)
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="16" alt="Gmail">
+                <label class="pay-option">
+                  <input type="radio" name="pay-method" value="COD">
+                  <div>
+                    <div style="font-weight:600; color:#333;">Cash on Delivery (COD)</div>
+                    <div style="font-size:12px; color:#777;">Pay when you receive the books + Order Confirmation</div>
                   </div>
-                  <div style="font-size:12px; color:#777;">Pay when you receive the books + Email Confirmation</div>
-                </div>
-              </label>
+                </label>
             </div>
 
             <div style="padding:20px;">
@@ -416,16 +413,11 @@ function createCartDrawer() {
           
           const confirmBtn = document.getElementById('final-confirm-btn');
           if (e.target.value === 'COD') {
-            confirmBtn.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="20">
-                Place Order & Notify Gmail
-              </div>
-            `;
-            confirmBtn.style.background = '#d93025'; // Gmail Red
+            confirmBtn.innerHTML = 'Place Order';
+            confirmBtn.style.background = '#f58117';
           } else {
             confirmBtn.innerHTML = 'Place Order';
-            confirmBtn.style.background = '#8B7355';
+            confirmBtn.style.background = '#f58117';
           }
         });
       });
@@ -465,34 +457,27 @@ function createCartDrawer() {
           const fetchUrl = apiBase + '/api/order/create';
 
           if (payMethod === 'COD') {
-            const res = await fetch(fetchUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ items: cartItems, products: cartItems, totalAmount: amount, address })
+            handleCODOrder({
+              items: cartItems,
+              totalAmount: amount,
+              address: address,
+              token: token,
+              apiBaseUrl: apiBase
+            }, {
+              onSuccess: () => {
+                saveCart([]);
+                syncCartUi();
+                closeCartDrawer();
+                const modal = document.getElementById('checkout-modal');
+                if (modal) modal.remove();
+                window.location.reload();
+              },
+              onError: (err) => {
+                alert(err.message || "Failed to place COD order");
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Place Order";
+              }
             });
-
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error("Server returned error:", errorText);
-              throw new Error(`Server ${res.status}: ${res.statusText}`);
-            }
-
-            const data = await res.json();
-            if (data.success) {
-              alert("Order placed successfully via Cash on Delivery! Sending notification to your Gmail...");
-              saveCart([]);
-              syncCartUi();
-              closeCartDrawer();
-              document.getElementById('checkout-modal').remove();
-              
-              // NEW: Immediate redirect to Gmail for confirmation
-              window.open('https://mail.google.com', '_blank');
-              window.location.reload(); 
-            } else {
-              alert(codData.message || "Failed to place COD order");
-              confirmBtn.disabled = false;
-              confirmBtn.textContent = "Place Order";
-            }
           } else {
             // Handle Online Payment Flow (Stripe)
             const stripeRes = await fetch(getApiBaseUrl() + '/api/payment/create-checkout-session', {

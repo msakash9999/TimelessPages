@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | TimelessPages</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="darkmode.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="darkmode.js"></script>
+    <style>
+        body { background: #fdfaf7; }
+        .confirmation-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .status-card {
+            background: #fff;
+            padding: 60px 40px;
+            border-radius: 30px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(139, 115, 85, 0.15);
+            animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: #f1f8e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 60px;
+        }
+        h1 { font-family: 'Syne', sans-serif; font-size: 38px; color: #1a1a1a; margin-bottom: 20px; font-weight: 800; }
+        p { color: #555; font-size: 18px; line-height: 1.6; margin-bottom: 45px; }
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+        .primary-btn {
+            background: #8B7355;
+            color: #fff;
+            padding: 18px 32px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 17px;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(139, 115, 85, 0.2);
+        }
+        .primary-btn:hover { background: #6F5B44; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(139, 115, 85, 0.3); }
+        .secondary-btn {
+            color: #8B7355;
+            padding: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .secondary-btn:hover { opacity: 0.8; letter-spacing: 0.5px; }
+        
+        [data-theme="dark"] body { background: #0f0e0c; }
+        [data-theme="dark"] .status-card { background: #1a1814; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4); }
+        [data-theme="dark"] .success-icon { background: #232a1b; }
+        [data-theme="dark"] h1 { color: #f5f0eb; }
+        [data-theme="dark"] p { color: #aaa; }
+    </style>
+</head>
+<body>
+    <main class="confirmation-page">
+        <div class="status-card">
+            <div class="success-icon">📚</div>
+            <h1>Order Confirmed!</h1>
+            <p>Your journey with your next favorite book has begun. We have sent a receipt to your email address.</p>
+            <div class="btn-group">
+                <a href="orders.html" class="primary-btn">View Order History</a>
+                <a href="home.html" class="secondary-btn">Return to Home</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

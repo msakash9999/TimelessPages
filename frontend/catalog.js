@@ -384,13 +384,13 @@ function injectCartDrawer() {
                 .ch-title { font-weight: 700; color: #333; margin-bottom: 15px; display: block; font-size: 16px; }
                 .ch-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
                 .ch-pay-option { display: flex; align-items: center; padding: 12px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-                .ch-pay-option:hover { border-color: #8B7355; background: #fdfaf7; }
-                .ch-pay-option input { margin-right: 12px; accent-color: #8B7355; }
-                .ch-pay-option.selected { border-color: #8B7355; background: #fdfaf7; }
-                .ch-btn { width: 100%; padding: 14px; background: #8B7355; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-                .ch-btn:hover { background: #6F5B44; transform: translateY(-2px); }
+                .ch-pay-option:hover { border-color: #f58117; background: #fffaf5; }
+                .ch-pay-option input { margin-right: 12px; accent-color: #f58117; }
+                .ch-pay-option.selected { border-color: #f58117; background: #fffaf5; }
+                .ch-btn { width: 100%; padding: 14px; background: #f58117; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+                .ch-btn:hover { background: #e67600; transform: translateY(-2px); }
               </style>
-              <div style="background:#8B7355;color:#fff;padding:25px;text-align:center;">
+              <div style="background:#f58117;color:#fff;padding:25px;text-align:center;">
                 <h2 style="margin:0;font-size:22px;">Complete Your Order</h2>
                 <p style="margin:5px 0 0;font-size:15px;opacity:0.9;">Fast & Secure Checkout</p>
               </div>
@@ -418,11 +418,8 @@ function injectCartDrawer() {
                 <label class="ch-pay-option">
                   <input type="radio" name="ch-pay-method" value="COD">
                   <div>
-                    <div style="font-weight:600; color:#333; display:flex; align-items:center; gap:8px;">
-                      Cash on Delivery (COD) 
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="16" alt="Gmail">
-                    </div>
-                    <div style="font-size:12px; color:#777;">Pay when you receive the books + Email Confirmation</div>
+                    <div style="font-weight:600; color:#333;">Cash on Delivery (COD)</div>
+                    <div style="font-size:12px; color:#777;">Pay when you receive the books + Order Confirmation</div>
                   </div>
                 </label>
               </div>
@@ -445,16 +442,11 @@ function injectCartDrawer() {
             
             const confirmBtn = document.getElementById('ch-confirm-btn');
             if (e.target.value === 'COD') {
-              confirmBtn.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="20">
-                  Place Order & Notify Gmail
-                </div>
-              `;
-              confirmBtn.style.background = '#d93025'; // Gmail Red
+              confirmBtn.innerHTML = 'Place Order';
+              confirmBtn.style.background = '#f58117';
             } else {
               confirmBtn.innerHTML = 'Place Order';
-              confirmBtn.style.background = '#8B7355';
+              confirmBtn.style.background = '#f58117';
             }
           });
         });
@@ -500,61 +492,23 @@ function injectCartDrawer() {
 
       if (checkoutData.paymentMethod === 'COD') {
         const amount = cartItems.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
-        const mappedProducts = cartItems.map(item => ({
-          ...item,
-          image: item.imageUrl // Map to expected backend field
-        }));
-        const res = await fetch(fetchUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ 
-            items: mappedProducts, 
-            products: mappedProducts, 
-            totalAmount: amount, 
-            address: checkoutData 
-          })
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error("Server returned error:", errorText);
-          throw new Error(`Server ${res.status}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        if (data.success) {
-          const successModal = document.createElement('div');
-          successModal.id = 'cod-success-modal';
-          successModal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10001;padding:20px;';
-          successModal.innerHTML = `
-            <div style="background:#fff;padding:40px;border-radius:20px;max-width:450px;width:100%;text-align:center;position:relative;box-shadow:0 20px 40px rgba(0,0,0,0.3);animation:modalSlideUp 0.4s ease-out;">
-              <div style="width:80px;height:80px;background:#E8F5E9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                <span style="font-size:40px;">✅</span>
-              </div>
-              <h2 style="font-family:'Syne',sans-serif;font-size:28px;color:#1a1a1a;margin-bottom:15px;">Order successful!</h2>
-              <p style="color:#666;margin-bottom:30px;">Your <b>Cash on Delivery</b> order has been sent to your Gmail. Our team will contact you soon.</p>
-              <button id="close-success-btn" style="width:100%;padding:15px;background:#8B7355;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:10px;">Done</button>
-              <a href="https://mail.google.com" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#d93025;font-weight:600;font-size:14px;padding:12px;border:2px solid #d93025;border-radius:10px;transition:0.3s;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="22" alt="Gmail">
-                Check Gmail Confirmation
-              </a>
-            </div>
-          `;
-          document.body.appendChild(successModal);
-          
-          // Automatically open Gmail in a new tab for convenience
-          window.open("https://mail.google.com", "_blank");
-
-          document.getElementById('close-success-btn').onclick = () => {
-            successModal.remove();
+        handleCODOrder({
+          items: cartItems,
+          totalAmount: amount,
+          address: checkoutData,
+          token: token,
+          apiBaseUrl: apiBase
+        }, {
+          onSuccess: () => {
             saveCart([]);
-            updateCartBadge();
-            renderCartDrawer();
-            closeCart();
-          };
-        } else {
-          alert(data.message || "Failed to place order");
-        }
+            if (typeof updateCartBadge === 'function') updateCartBadge();
+            if (typeof renderCartDrawer === 'function') renderCartDrawer();
+            if (typeof closeCart === 'function') closeCart();
+          },
+          onError: (err) => {
+            alert(err.message || "Failed to place order");
+          }
+        });
       } else {
         const { response, data } = await requestJson('/api/payment/create-checkout-session', {
           method: 'POST',
