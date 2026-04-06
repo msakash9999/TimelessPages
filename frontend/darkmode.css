@@ -138,6 +138,12 @@
   background: #d4af37 !important;
   color: #111 !important;
 }
+[data-theme="dark"] .user-session,
+[data-theme="dark"] .session-link {
+  background: #1a1a1a !important;
+  border-color: #333 !important;
+  color: #e8e3da !important;
+}
 [data-theme="dark"] .logout-btn {
   background: #d4af37 !important;
   color: #111 !important;

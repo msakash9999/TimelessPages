@@ -95,6 +95,52 @@ function extractPriceValue(priceText) {
   return Number.isFinite(numericValue) ? numericValue : 0;
 }
 
+function showOrderSuccess() {
+  const overlayHtml = `
+    <div id="order-success-overlay">
+      <div class="success-checkmark">
+        <div class="check-icon">
+          <span class="icon-line line-tip"></span>
+          <span class="icon-line line-long"></span>
+          <div class="icon-circle"></div>
+          <div class="icon-fix"></div>
+        </div>
+      </div>
+      <div class="success-message">
+        <h2>Order Successful!</h2>
+        <p>Thank you for shopping with TimelessPages. Your order has been placed successfully.</p>
+        <div class="success-actions">
+          <a href="orders.html" class="btn-orders">View My Orders</a>
+          <a href="index.html" class="btn-home">Back to Home</a>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', overlayHtml);
+  
+  // Trigger animation
+  setTimeout(() => {
+    document.getElementById('order-success-overlay').classList.add('active');
+  }, 10);
+
+  // Clear cart immediately
+  saveCart([]);
+  if (typeof syncCartUi === 'function') syncCartUi();
+  if (typeof closeCartDrawer === 'function') closeCartDrawer();
+  
+  // Remove checkout modal if it exists
+  const modal = document.getElementById('checkout-modal');
+  if (modal) modal.remove();
+
+  // Automatic redirect after 5 seconds if user doesn't click anything
+  setTimeout(() => {
+    if (document.getElementById('order-success-overlay')) {
+      window.location.href = 'orders.html';
+    }
+  }, 5000);
+}
+
 function formatPrice(price) {
   if (!price) {
     return 'Price on request';
@@ -352,14 +398,14 @@ function createCartDrawer() {
               .checkout-title { font-weight: 700; color: #333; margin-bottom: 15px; display: block; font-size: 16px; }
               .addr-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
               .pay-option { display: flex; align-items: center; padding: 12px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-              .pay-option:hover { border-color: #8B7355; background: #fdfaf7; }
-              .pay-option input { margin-right: 12px; accent-color: #8B7355; }
-              .pay-option.selected { border-color: #8B7355; background: #fdfaf7; }
-              .checkout-btn { width: 100%; padding: 14px; background: #8B7355; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-              .checkout-btn:hover { background: #6F5B44; transform: translateY(-2px); }
+              .pay-option:hover { border-color: #f18d17; background: #fffcf9; }
+              .pay-option input { margin-right: 12px; accent-color: #f18d17; }
+              .pay-option.selected { border-color: #f18d17; background: #fffcf9; }
+              .checkout-btn { width: 100%; padding: 14px; background: #f18d17; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+              .checkout-btn:hover { background: #d37200; transform: translateY(-2px); }
               .checkout-btn:disabled { background: #ccc; cursor: not-allowed; }
             </style>
-            <div style="background:#8B7355;color:#fff;padding:25px;text-align:center;">
+            <div style="background:#f18d17;color:#fff;padding:25px;text-align:center;">
               <h2 style="margin:0;font-size:22px;">Complete Your Order</h2>
               <p style="margin:5px 0 0;font-size:15px;opacity:0.9;">Total Payable: <strong>₹${amount.toLocaleString('en-IN')}</strong></p>
             </div>
@@ -392,7 +438,6 @@ function createCartDrawer() {
                 <div>
                   <div style="font-weight:600; color:#333; display:flex; align-items:center; gap:8px;">
                     Cash on Delivery (COD)
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="16" alt="Gmail">
                   </div>
                   <div style="font-size:12px; color:#777;">Pay when you receive the books + Email Confirmation</div>
                 </div>
@@ -416,16 +461,11 @@ function createCartDrawer() {
           
           const confirmBtn = document.getElementById('final-confirm-btn');
           if (e.target.value === 'COD') {
-            confirmBtn.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" width="20">
-                Place Order & Notify Gmail
-              </div>
-            `;
-            confirmBtn.style.background = '#d93025'; // Gmail Red
+            confirmBtn.innerHTML = 'Place Order';
+            confirmBtn.style.background = '#f18d17'; 
           } else {
             confirmBtn.innerHTML = 'Place Order';
-            confirmBtn.style.background = '#8B7355';
+            confirmBtn.style.background = '#f18d17';
           }
         });
       });
@@ -479,17 +519,11 @@ function createCartDrawer() {
 
             const data = await res.json();
             if (data.success) {
-              alert("Order placed successfully via Cash on Delivery! Sending notification to your Gmail...");
-              saveCart([]);
-              syncCartUi();
-              closeCartDrawer();
-              document.getElementById('checkout-modal').remove();
-              
-              // NEW: Immediate redirect to Gmail for confirmation
-              window.open('https://mail.google.com', '_blank');
-              window.location.reload(); 
+              showOrderSuccess();
+              // Optional: Keep the gmail redirect if desired, but the animation is the focus now
+              // window.open('https://mail.google.com', '_blank');
             } else {
-              alert(codData.message || "Failed to place COD order");
+              alert(data.message || "Failed to place COD order");
               confirmBtn.disabled = false;
               confirmBtn.textContent = "Place Order";
             }

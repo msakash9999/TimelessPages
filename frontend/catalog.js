@@ -111,8 +111,8 @@ function updateNavSession() {
 
   if (!isLoggedIn || !displayName) {
     sessionBox.innerHTML = `
-      <a href="login.html" id="loginLink">Login</a>
-      <a href="admin-login.html" id="adminLink" style="margin-left: 10px;">Admin</a>
+      <a href="login.html" id="loginLink" class="login-btn">Login</a>
+      <a href="admin-login.html" id="adminLink" style="margin-left: 10px;" class="login-btn">Admin</a>
     `;
     sessionBox.setAttribute("data-session-state", "logged-out");
     return;
@@ -723,15 +723,17 @@ document.addEventListener('click', function (e) {
 });
 
 function addCartToNav() {
-  const actions = document.querySelector('.actions');
-  if (!actions || document.getElementById('tp-cart-nav-btn')) return;
+  const container = document.querySelector('.actions') || document.querySelector('.icons');
+  if (!container || document.getElementById('tp-cart-nav-btn') || document.querySelector('[data-cart-toggle]')) return;
+  
   const cartBtn = document.createElement('button');
   cartBtn.id = 'tp-cart-nav-btn';
+  cartBtn.className = 'icon-btn cart-nav-btn';
   cartBtn.type = 'button';
-  cartBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:inherit;font-size:20px;display:inline-flex;align-items:center;gap:2px;padding:4px 8px;';
-  cartBtn.innerHTML = '🛒<span id="tp-cart-badge" style="display:none;"></span>';
+  cartBtn.setAttribute('data-cart-toggle', '');
+  cartBtn.innerHTML = '🛒<span class="cart-count-badge" data-cart-count id="tp-cart-badge" style="display:none;">0</span>';
   cartBtn.title = 'View Cart';
-  actions.prepend(cartBtn);
+  container.prepend(cartBtn);
   updateCartBadge();
 }
 
