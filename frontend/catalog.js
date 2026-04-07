@@ -2,7 +2,7 @@ function getApiBaseCandidates() {
   const savedApiBaseUrl = localStorage.getItem("timelessPagesApiBaseUrl");
   const { protocol, hostname, port, origin } = window.location;
   const isHttpPage = protocol === "http:" || protocol === "https:";
-  
+
   // Prioritize localhost:5000 as it's the primary backend for this demo
   const priorityCandidates = ["http://localhost:5000", "http://127.0.0.1:5000"];
 
@@ -442,7 +442,7 @@ function injectCartDrawer() {
             modal.querySelectorAll('.ch-pay-option').forEach(opt => opt.classList.remove('selected'));
             const container = e.target.closest('.ch-pay-option');
             container.classList.add('selected');
-            
+
             const confirmBtn = document.getElementById('ch-confirm-btn');
             if (e.target.value === 'COD') {
               confirmBtn.innerHTML = `
@@ -507,11 +507,11 @@ function injectCartDrawer() {
         const res = await fetch(fetchUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ 
-            items: mappedProducts, 
-            products: mappedProducts, 
-            totalAmount: amount, 
-            address: checkoutData 
+          body: JSON.stringify({
+            items: mappedProducts,
+            products: mappedProducts,
+            totalAmount: amount,
+            address: checkoutData
           })
         });
 
@@ -541,7 +541,7 @@ function injectCartDrawer() {
             </div>
           `;
           document.body.appendChild(successModal);
-          
+
           // Automatically open Gmail in a new tab for convenience
           window.open("https://mail.google.com", "_blank");
 
@@ -725,7 +725,7 @@ document.addEventListener('click', function (e) {
 function addCartToNav() {
   const container = document.querySelector('.actions') || document.querySelector('.icons');
   if (!container || document.getElementById('tp-cart-nav-btn') || document.querySelector('[data-cart-toggle]')) return;
-  
+
   const cartBtn = document.createElement('button');
   cartBtn.id = 'tp-cart-nav-btn';
   cartBtn.className = 'icon-btn cart-nav-btn';

@@ -171,6 +171,39 @@
     }
   });
 
+  const forgotPwdBtn = document.getElementById('forgotPwdBtn');
+  forgotPwdBtn?.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail')?.value.trim();
+    if (!email) {
+      setMsg('loginMsg', 'Please enter your email address first.', 'error');
+      return;
+    }
+
+    forgotPwdBtn.disabled = true;
+    setMsg('loginMsg', 'Sending verification code...', 'info');
+
+    try {
+      const { response, data } = await requestJson('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'Failed to send OTP.');
+      }
+
+      currentLoginEmail = email; // Store for OTP verification
+      window.switchTab('otp');
+      setMsg('otpMsg', 'Verification code sent to ' + email, 'success');
+
+    } catch (err) {
+      setMsg('loginMsg', err.message, 'error');
+    } finally {
+      forgotPwdBtn.disabled = false;
+    }
+  });
+
   /* ════════════════════════════════════════
      SIGN UP FORM
      ════════════════════════════════════════ */
