@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging Out... - TimelessPages</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1814;
+            color: #f5f0eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid #8B7355;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <div class="loader" style="margin: 0 auto 20px;"></div>
+        <p>Logging you out safely...</p>
+    </div>
+
+    <script>
+        (function logout() {
+            // Clear all TimelessPages related storage
+            const keysToRemove = [
+                'timelessPagesLoggedIn',
+                'timelessPagesUserName',
+                'timelessPagesUserEmail',
+                'timelessPagesUserToken',
+                'timelessPagesAdminToken',
+                'timelessPagesAdminEmail',
+                'timelessPagesAdminName',
+                'timelessPagesIsAdmin',
+                'timelessPagesCart',
+                'timelessPagesWishlist',
+                'tp_cart',
+                'tp_wishlist'
+            ];
+
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            sessionStorage.clear();
+
+            // Redirect to home/index
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        })();
+    </script>
+</body>
+</html>

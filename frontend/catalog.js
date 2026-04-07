@@ -2,7 +2,7 @@ function getApiBaseCandidates() {
   const savedApiBaseUrl = localStorage.getItem("timelessPagesApiBaseUrl");
   const { protocol, hostname, port, origin } = window.location;
   const isHttpPage = protocol === "http:" || protocol === "https:";
-  
+
   // Prioritize localhost:5000 as it's the primary backend for this demo
   const priorityCandidates = ["http://localhost:5000", "http://127.0.0.1:5000"];
 
@@ -74,14 +74,18 @@ function getUserSession() {
 }
 
 function clearAllSessions() {
-  localStorage.removeItem("timelessPagesLoggedIn");
-  localStorage.removeItem("timelessPagesUserName");
-  localStorage.removeItem("timelessPagesUserEmail");
-  localStorage.removeItem("timelessPagesUserToken");
-  localStorage.removeItem("timelessPagesAdminToken");
-  localStorage.removeItem("timelessPagesAdminEmail");
-  localStorage.removeItem("timelessPagesAdminName");
-  localStorage.removeItem("timelessPagesIsAdmin");
+  const keysToRemove = [
+    "timelessPagesLoggedIn",
+    "timelessPagesUserName",
+    "timelessPagesUserEmail",
+    "timelessPagesUserToken",
+    "timelessPagesAdminToken",
+    "timelessPagesAdminEmail",
+    "timelessPagesAdminName",
+    "timelessPagesIsAdmin"
+  ];
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+  sessionStorage.clear();
 }
 
 async function requestLogout(path) {
@@ -163,12 +167,13 @@ function renderFullCard(book) {
   return `
     <article class="product-card" data-id="${book._id || ''}" data-title="${encodeURIComponent(book.title || '')}" data-author="${encodeURIComponent(book.author || '')}" data-price="${book.price || 0}" data-img="${encodeURIComponent(book.imageUrl || '')}">
       <button type="button" class="wishlist-top" aria-label="Add to wishlist">&#9825;</button>
-      <img src="${book.imageUrl}" alt="${book.title}">
+      <img src="${book.imageUrl}" alt="${book.title}" loading="lazy">
       <h3>${book.title}</h3>
-      <p>${book.author}</p>
+      <p class="author">${book.author}</p>
+      <div class="card-description">${book.description || ''}</div>
       <strong>${formatPrice(book.price)}</strong>
       <div class="storybook-actions">
-        <button type="button" class="storybook-btn buy-btn">Buy</button>
+        <button type="button" class="storybook-btn buy-btn">Buy Now</button>
         <button type="button" class="storybook-btn cart-btn">Add to Cart</button>
       </div>
     </article>
@@ -202,8 +207,14 @@ async function loadBooks() {
   }
 
   try {
-    const query = params.toString();
-    const { response, data: books } = await requestJson(`/books${query ? `?${query}` : ""}`);
+    let endpoint = "/books";
+    if (category === "science") {
+      endpoint = "/books/science";
+    } else if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+
+    const { response, data: books } = await requestJson(endpoint);
 
     if (!Array.isArray(books)) {
       throw new Error(books?.message || "Could not load books");
@@ -236,11 +247,27 @@ async function loadBooks() {
   }
 }
 
-const CART_KEY = 'tp_cart';
+const CART_KEY = 'cart';
 const WISH_KEY = 'tp_wishlist';
 
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+function getCart() {
+  try {
+    return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function saveCart(cart) {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  updateCartBadge();
+}
+
+function removeFromCart(id) {
+  const cart = getCart().filter(item => item.id !== id);
+  saveCart(cart);
+  renderCartDrawer();
+}
 function getWishlist() { try { return JSON.parse(localStorage.getItem(WISH_KEY) || '[]'); } catch { return []; } }
 function saveWishlist(list) { localStorage.setItem(WISH_KEY, JSON.stringify(list)); }
 
@@ -248,7 +275,7 @@ function bookFromCard(card) {
   if (!card) return null;
   if (card.dataset.title) {
     return {
-      id: card.dataset.id || (card.dataset.title + card.dataset.author),
+      id: card.dataset.id || (card.dataset.title + card.dataset.author).replace(/\s+/g, '_').toLowerCase(),
       title: decodeURIComponent(card.dataset.title),
       author: decodeURIComponent(card.dataset.author || ''),
       price: Number(card.dataset.price) || 0,
@@ -257,11 +284,24 @@ function bookFromCard(card) {
   }
   const title = card.querySelector('h3')?.textContent?.trim() || 'Unknown';
   const author = card.querySelector('p')?.textContent?.trim() || '';
-  const priceRaw = card.querySelector('strong')?.textContent?.trim() || '0';
-  const price = Number(priceRaw.replace(/[^0-9.]/g, '')) || 0;
+  const priceRaw = card.querySelector('strong')?.textContent?.trim() || '₹299'; // Default price if missing
+  const price = Number(priceRaw.replace(/[^0-9.]/g, '')) || 299;
   const imageUrl = card.querySelector('img')?.src || '';
-  const id = (title + author).replace(/\s+/g, '_').toLowerCase();
+  const id = (title + author).replace(/\s+/g, '_').toLowerCase().replace(/[^\w]/g, '');
   return { id, title, author, price, imageUrl };
+}
+
+function syncCardDataset(card) {
+  const book = bookFromCard(card);
+  if (!card || !book) return null;
+
+  if (!card.dataset.id) card.dataset.id = book.id || '';
+  if (!card.dataset.title) card.dataset.title = encodeURIComponent(book.title || '');
+  if (!card.dataset.author) card.dataset.author = encodeURIComponent(book.author || '');
+  if (!card.dataset.price) card.dataset.price = String(book.price || 0);
+  if (!card.dataset.img) card.dataset.img = encodeURIComponent(book.imageUrl || '');
+
+  return book;
 }
 
 function showToast(msg, type) {
@@ -298,10 +338,18 @@ function showToast(msg, type) {
 function updateCartBadge() {
   const cart = getCart();
   const count = cart.reduce((s, i) => s + (i.qty || 1), 0);
-  let badge = document.getElementById('tp-cart-badge');
-  if (!badge) return;
-  badge.textContent = count || '';
-  badge.style.display = count > 0 ? 'inline-flex' : 'none';
+
+  // Update all instances of badges (some pages use IDs, some use data attributes)
+  const badges = document.querySelectorAll('#tp-cart-badge, [data-cart-count]');
+  badges.forEach(badge => {
+    badge.textContent = count || '0';
+    badge.style.display = count > 0 ? 'inline-flex' : (badge.id === 'tp-cart-badge' ? 'none' : 'inline-flex');
+    // Ensure visibility if it was hidden
+    if (count > 0) {
+      badge.style.opacity = '1';
+      badge.style.visibility = 'visible';
+    }
+  });
 }
 
 function injectCartDrawer() {
@@ -336,8 +384,89 @@ function injectCartDrawer() {
     #tp-cart-drawer .cd-checkout{display:block;width:100%;padding:14px;background:#8B7355;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;text-align:center;transition:background .2s;}
     #tp-cart-drawer .cd-checkout:hover{background:#a08060;}
     .cd-empty{text-align:center;color:#777;padding:60px 20px;font-size:15px;}
-    #tp-cart-badge{background:#e74c3c;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;margin-left:4px;vertical-align:middle;}
+    #tp-cart-badge{background:#e74c3c;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;position:absolute;top:-4px;right:-10px;border:2px solid #1a1814;transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
     .wishlist-top.wished{color:#e74c3c !important;}
+
+    /* Premium Cart Icon Styles */
+    .cart-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+    .cart-pill:hover {
+      background: rgba(139, 115, 85, 0.1);
+      transform: translateY(-2px);
+    }
+    .cart-pill:hover .cart-svg {
+      filter: drop-shadow(0 0 8px rgba(139, 115, 85, 0.6));
+      animation: cartBounce 0.6s ease;
+    }
+    .cart-svg {
+      width: 24px;
+      height: 24px;
+      color: #8B7355;
+      transition: all 0.3s ease;
+    }
+    @keyframes cartBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-4px) scale(1.1); }
+      50% { transform: translateY(0) scale(0.9); }
+    }
+
+    /* Selective Order Styles */
+    .cd-select-all {
+      padding: 12px 24px;
+      background: #2a2822;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #f5f0eb;
+      font-size: 14px;
+      border-bottom: 1px solid #333;
+    }
+    .cd-item-select-wrapper {
+      padding-right: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .tp-checkbox {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #555;
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .tp-checkbox:checked {
+      background: #8B7355;
+      border-color: #8B7355;
+    }
+    .tp-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      color: #fff;
+      font-size: 12px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .tp-checkbox:hover {
+      border-color: #8B7355;
+    }
+    .cd-item.unselected {
+      opacity: 0.6;
+    }
+    .cd-item.unselected img {
+      filter: grayscale(1);
+    }
   `;
   document.head.appendChild(style);
 
@@ -350,20 +479,36 @@ function injectCartDrawer() {
   drawer.id = 'tp-cart-drawer';
   drawer.innerHTML = `
     <div class="cd-head">
-      <h2>🛒 Your Cart</h2>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="cart-pill" style="padding:0;background:none;cursor:default;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cart-svg" style="width:22px;height:22px;">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </div>
+        <h2 style="margin:0;">Your Cart</h2>
+      </div>
       <button class="cd-close" id="tp-cart-close">✕</button>
+    </div>
+    <div class="cd-select-all">
+      <input type="checkbox" id="tp-cart-select-all" class="tp-checkbox">
+      <label for="tp-cart-select-all" style="cursor:pointer;user-select:none;">Select All Items</label>
     </div>
     <div id="tp-cart-items"></div>
     <div class="cd-foot">
-      <div class="cd-total"><span>Total</span><span id="cd-total-price">₹0</span></div>
+      <div class="cd-total"><span>Selected Total</span><span id="cd-total-price">₹0</span></div>
       <button class="cd-checkout" id="cd-checkout-btn">Proceed to Checkout →</button>
     </div>
   `;
   document.body.appendChild(drawer);
   document.getElementById('tp-cart-close').addEventListener('click', closeCart);
   document.getElementById('cd-checkout-btn').addEventListener('click', async () => {
-    const cartItems = getCart();
-    if (!cartItems.length) return;
+    const cartItems = getCart().filter(i => i.selected !== false);
+    if (!cartItems.length) {
+      showToast('Please select at least one item to proceed', 'wish');
+      return;
+    }
 
     if (localStorage.getItem('timelessPagesLoggedIn') !== 'true') {
       showToast('Please login to checkout', 'wish');
@@ -442,7 +587,7 @@ function injectCartDrawer() {
             modal.querySelectorAll('.ch-pay-option').forEach(opt => opt.classList.remove('selected'));
             const container = e.target.closest('.ch-pay-option');
             container.classList.add('selected');
-            
+
             const confirmBtn = document.getElementById('ch-confirm-btn');
             if (e.target.value === 'COD') {
               confirmBtn.innerHTML = `
@@ -507,11 +652,11 @@ function injectCartDrawer() {
         const res = await fetch(fetchUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ 
-            items: mappedProducts, 
-            products: mappedProducts, 
-            totalAmount: amount, 
-            address: checkoutData 
+          body: JSON.stringify({
+            items: mappedProducts,
+            products: mappedProducts,
+            totalAmount: amount,
+            address: checkoutData
           })
         });
 
@@ -541,19 +686,16 @@ function injectCartDrawer() {
             </div>
           `;
           document.body.appendChild(successModal);
-          
+
           // Automatically open Gmail in a new tab for convenience
           window.open("https://mail.google.com", "_blank");
 
           document.getElementById('close-success-btn').onclick = () => {
             successModal.remove();
-            saveCart([]);
-            updateCartBadge();
-            renderCartDrawer();
-            closeCart();
           };
         } else {
           alert(data.message || "Failed to place order");
+          return;
         }
       } else {
         const { response, data } = await requestJson('/api/payment/create-checkout-session', {
@@ -564,10 +706,18 @@ function injectCartDrawer() {
 
         if (data && data.url) {
           window.location.href = data.url;
+          return;
         } else {
           throw new Error(data?.message || 'Failed to create checkout session');
         }
       }
+
+      const currentCart = getCart();
+      const updatedCart = currentCart.filter(item => !cartItems.some(ordered => ordered.id === item.id));
+      saveCart(updatedCart);
+      updateCartBadge();
+      renderCartDrawer();
+      if (updatedCart.length === 0) closeCart();
     } catch (err) {
       alert(err.message || 'Checkout failed.');
     } finally {
@@ -602,10 +752,19 @@ function renderCartDrawer() {
   }
 
   let total = 0;
+  const allSelected = cart.every(i => i.selected !== false);
+  const selectAllCheckbox = document.getElementById('tp-cart-select-all');
+  if (selectAllCheckbox) selectAllCheckbox.checked = allSelected;
+
   container.innerHTML = cart.map((item, idx) => {
-    total += item.price * (item.qty || 1);
+    const isSelected = item.selected !== false;
+    if (isSelected) total += item.price * (item.qty || 1);
+
     return `
-      <div class="cd-item" data-idx="${idx}">
+      <div class="cd-item ${isSelected ? '' : 'unselected'}" data-idx="${idx}">
+        <div class="cd-item-select-wrapper">
+          <input type="checkbox" class="tp-checkbox cd-item-check" data-idx="${idx}" ${isSelected ? 'checked' : ''}>
+        </div>
         <img src="${item.imageUrl || ''}" alt="${item.title}" onerror="this.src='assets/placeholder.png'">
         <div class="cd-item-info">
           <h4>${item.title}</h4>
@@ -622,6 +781,27 @@ function renderCartDrawer() {
   }).join('');
 
   if (totalEl) totalEl.textContent = formatPrice(total);
+
+  // Add listener for individual checkboxes
+  container.querySelectorAll('.cd-item-check').forEach(check => {
+    check.addEventListener('change', (e) => {
+      const cart = getCart();
+      const idx = +e.target.dataset.idx;
+      cart[idx].selected = e.target.checked;
+      saveCart(cart);
+      renderCartDrawer();
+    });
+  });
+
+  // Add listener for Select All
+  if (selectAllCheckbox) {
+    selectAllCheckbox.onchange = (e) => {
+      const cart = getCart();
+      cart.forEach(i => i.selected = e.target.checked);
+      saveCart(cart);
+      renderCartDrawer();
+    };
+  }
 
   container.querySelectorAll('.cd-qty-inc').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -648,7 +828,7 @@ function renderCartDrawer() {
 
 function isWished(id) { return getWishlist().some(w => w.id === id); }
 function refreshWishlistUI() {
-  document.querySelectorAll('.product-card').forEach(card => {
+  document.querySelectorAll('.product-card, .book-tile').forEach(card => {
     const book = bookFromCard(card);
     const btn = card.querySelector('.wishlist-top');
     if (!btn || !book) return;
@@ -669,10 +849,83 @@ function addToCart(book) {
   updateCartBadge();
 }
 
+function buyNow(book) {
+  addToCart(book);
+  openCart();
+}
+
+function bindCardActions(card) {
+  if (!card || card.dataset.actionBound === 'true') return;
+
+  const wishlistBtn = card.querySelector('.wishlist-top');
+  const cartBtn = card.querySelector('.cart-btn');
+  const buyBtn = card.querySelector('.buy-btn');
+
+  wishlistBtn?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const book = bookFromCard(card);
+    if (!book) return;
+
+    const list = getWishlist();
+    const idx = list.findIndex(w => w.id === book.id);
+    if (idx === -1) {
+      list.push(book);
+      saveWishlist(list);
+      wishlistBtn.textContent = '♥';
+      wishlistBtn.classList.add('wished');
+      showToast(`❤️ "${book.title}" added to wishlist!`, 'wish');
+    } else {
+      list.splice(idx, 1);
+      saveWishlist(list);
+      wishlistBtn.textContent = '♡';
+      wishlistBtn.classList.remove('wished');
+      showToast(`Removed "${book.title}" from wishlist.`, 'wish');
+    }
+  });
+
+  cartBtn?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const book = bookFromCard(card);
+    if (!book) return;
+
+    addToCart(book);
+    showToast(`🛒 "${book.title}" added to cart!`, 'cart');
+    cartBtn.textContent = '✓ Added!';
+    cartBtn.style.background = '#2ecc71';
+    setTimeout(() => {
+      cartBtn.textContent = 'Add to Cart';
+      cartBtn.style.background = '';
+    }, 1500);
+  });
+
+  buyBtn?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const book = bookFromCard(card);
+    if (!book) return;
+
+    buyNow(book);
+    showToast(`✅ "${book.title}" added! Open cart to checkout.`, 'buy');
+    buyBtn.textContent = '✓ In Cart!';
+    buyBtn.style.background = '#8B7355';
+    setTimeout(() => {
+      buyBtn.textContent = 'Buy Now';
+      buyBtn.style.background = '';
+    }, 1500);
+  });
+
+  card.dataset.actionBound = 'true';
+}
+
 document.addEventListener('click', function (e) {
   const wishBtn = e.target.closest('.wishlist-top');
   if (wishBtn) {
-    const card = wishBtn.closest('.product-card');
+    const card = wishBtn.closest('.product-card, .book-tile');
     const book = bookFromCard(card);
     if (!book) return;
     const list = getWishlist();
@@ -693,7 +946,7 @@ document.addEventListener('click', function (e) {
 
   const cartBtn = e.target.closest('.cart-btn');
   if (cartBtn) {
-    const card = cartBtn.closest('.product-card');
+    const card = cartBtn.closest('.product-card, .book-tile');
     const book = bookFromCard(card);
     if (!book) return;
     addToCart(book);
@@ -706,45 +959,100 @@ document.addEventListener('click', function (e) {
 
   const buyBtn = e.target.closest('.buy-btn');
   if (buyBtn) {
-    const card = buyBtn.closest('.product-card');
+    const card = buyBtn.closest('.product-card, .book-tile');
     const book = bookFromCard(card);
     if (!book) return;
-    addToCart(book);
+    buyNow(book);
     showToast(`✅ "${book.title}" added! Open cart to checkout.`, 'buy');
     buyBtn.textContent = '✓ In Cart!';
     buyBtn.style.background = '#8B7355';
-    setTimeout(() => { buyBtn.textContent = 'Buy'; buyBtn.style.background = ''; }, 1500);
-    openCart();
+    setTimeout(() => { buyBtn.textContent = 'Buy Now'; buyBtn.style.background = ''; }, 1500);
     return;
   }
 
-  const cartIcon = e.target.closest('#tp-cart-nav-btn');
-  if (cartIcon) openCart();
+  const cartIcon = e.target.closest('[data-cart-toggle], #tp-cart-nav-btn');
+  if (cartIcon) {
+    e.preventDefault();
+    openCart();
+  }
 });
 
 function addCartToNav() {
   const container = document.querySelector('.actions') || document.querySelector('.icons');
   if (!container || document.getElementById('tp-cart-nav-btn') || document.querySelector('[data-cart-toggle]')) return;
-  
+
   const cartBtn = document.createElement('button');
   cartBtn.id = 'tp-cart-nav-btn';
   cartBtn.className = 'icon-btn cart-nav-btn';
   cartBtn.type = 'button';
   cartBtn.setAttribute('data-cart-toggle', '');
-  cartBtn.innerHTML = '🛒<span class="cart-count-badge" data-cart-count id="tp-cart-badge" style="display:none;">0</span>';
+  cartBtn.className = 'cart-pill';
+  cartBtn.innerHTML = `
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cart-svg">
+      <circle cx="9" cy="21" r="1"></circle>
+      <circle cx="20" cy="21" r="1"></circle>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+    </svg>
+    <span class="cart-count-badge" data-cart-count id="tp-cart-badge" style="display:none;">0</span>
+  `;
   cartBtn.title = 'View Cart';
   container.prepend(cartBtn);
   updateCartBadge();
 }
 
-updateNavSession();
-addCartToNav();
-injectCartDrawer();
-loadBooks().then(() => { refreshWishlistUI(); });
+function fixMissingButtons() {
+  const cards = document.querySelectorAll('.product-card, .book-tile');
+  cards.forEach(card => {
+    syncCardDataset(card);
+
+    if (!card.querySelector('.wishlist-top')) {
+      const wishlistBtn = document.createElement('button');
+      wishlistBtn.type = 'button';
+      wishlistBtn.className = 'wishlist-top';
+      wishlistBtn.setAttribute('aria-label', 'Add to wishlist');
+      wishlistBtn.innerHTML = '&#9825;';
+      card.prepend(wishlistBtn);
+    }
+
+    if (!card.querySelector('.storybook-actions')) {
+      const actions = document.createElement('div');
+      actions.className = 'storybook-actions';
+      actions.innerHTML = `
+        <button type="button" class="storybook-btn buy-btn">Buy Now</button>
+        <button type="button" class="storybook-btn cart-btn">Add to Cart</button>
+      `;
+      card.appendChild(actions);
+    }
+
+    const buyBtn = card.querySelector('.buy-btn');
+    if (buyBtn && buyBtn.textContent.trim() !== 'Buy Now') {
+      buyBtn.textContent = 'Buy Now';
+    }
+
+    bindCardActions(card);
+  });
+}
+
+function initGlobalCart() {
+  updateNavSession();
+  addCartToNav();
+  injectCartDrawer();
+  fixMissingButtons();
+  updateCartBadge();
+
+  // Re-run fix and badge update after books load
+  loadBooks().then(() => {
+    refreshWishlistUI();
+    fixMissingButtons();
+    updateCartBadge();
+  });
+}
+
+// Initial Run
+initGlobalCart();
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Ensure everything is up to date after DOM is fully ready
-  updateNavSession();
-  refreshWishlistUI();
-  addCartToNav();
+  initGlobalCart();
+  // Extra check for dynamic content
+  setTimeout(initGlobalCart, 500);
 });

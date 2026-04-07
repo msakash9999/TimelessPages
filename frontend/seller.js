@@ -39,11 +39,11 @@
     options = options || {};
     options.headers = options.headers || {};
     options.headers.Authorization = 'Bearer ' + sellerToken;
-    
+
     var res = await fetch(apiUrl + endpoint, options);
     var text = await res.text();
     var data;
-    try { data = JSON.parse(text); } catch(e) { data = { message: text || 'Unknown response' }; }
+    try { data = JSON.parse(text); } catch (e) { data = { message: text || 'Unknown response' }; }
     return { response: res, data: data };
   }
 
@@ -56,29 +56,29 @@
   /* ── My Catalog ── */
   async function loadSellerBooks() {
     booksList.innerHTML = '<p style="color:var(--text-muted); grid-column: 1/-1;">Loading your catalog...</p>';
-    
+
     try {
       var res = await requestJson('/books?sellerId=' + sellerId);
       if (!res.response.ok) throw new Error(res.data.message || 'Failed to load books');
-      
+
       var books = res.data;
       if (books.length === 0) {
         booksList.innerHTML = '<p style="color:var(--text-muted); grid-column: 1/-1;">You haven\'t published any books yet.</p>';
         return;
       }
 
-      booksList.innerHTML = books.map(function(book) {
+      booksList.innerHTML = books.map(function (book) {
         return '<article class="mini-book-card">' +
           '<img src="' + (book.imageUrl || 'assets/placeholder.png') + '" alt="' + book.title + '">' +
           '<h3>' + book.title + '</h3>' +
           '<p class="price">₹' + book.price + '</p>' +
           '<button class="logout-btn" style="margin-top:10px; width:100%" data-delete="' + book._id + '">Delete</button>' +
-        '</article>';
+          '</article>';
       }).join('');
 
       // Bind delete buttons
-      booksList.querySelectorAll('[data-delete]').forEach(function(btn) {
-        btn.addEventListener('click', async function() {
+      booksList.querySelectorAll('[data-delete]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
           if (!confirm('Delete this book permanently?')) return;
           var id = this.getAttribute('data-delete');
           this.disabled = true;
@@ -87,7 +87,7 @@
             var del = await requestJson('/books/' + id, { method: 'DELETE' });
             if (!del.response.ok) throw new Error(del.data.message || 'Delete failed');
             loadSellerBooks();
-          } catch(e) {
+          } catch (e) {
             alert('Could not delete: ' + e.message);
             this.textContent = 'Delete';
             this.disabled = false;
@@ -106,7 +106,7 @@
       e.preventDefault();
 
       var imageFile = document.getElementById('bookImageFile')?.files[0];
-      var imageUrl  = (document.getElementById('bookImageUrl')?.value || '').trim();
+      var imageUrl = (document.getElementById('bookImageUrl')?.value || '').trim();
       var bookTitle = (document.getElementById('bookTitle')?.value || '').trim();
 
       if (!imageFile && !imageUrl) {
@@ -150,7 +150,7 @@
         });
 
         if (!saveRes.response.ok) throw new Error(saveRes.data.message || 'Failed to publish');
-        
+
         setMsg('Book published successfully!');
         bookForm.reset();
         document.getElementById('bookImageUrl').value = '';

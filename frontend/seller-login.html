@@ -45,6 +45,9 @@
                 <div class="field">
                     <label for="loginPassword">Password</label>
                     <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    <div style="text-align: right; margin-top: 4px;">
+                        <button type="button" class="link-btn" id="forgotPwdBtn" style="font-size: 0.78rem;">Forgot Password?</button>
+                    </div>
                 </div>
                 <p id="loginMsg" class="form-message"></p>
                 <button type="submit" class="auth-btn" id="loginBtn">Access Dashboard</button>
@@ -77,6 +80,26 @@
                 <button type="submit" class="auth-btn" id="signupBtn">Create Store Account</button>
             </form>
             <p class="switch-hint">Already a partner? <button class="link-btn" onclick="switchTab('login')">Log in →</button></p>
+        </div>
+
+        <!-- OTP FORM -->
+        <div class="auth-form-wrap hidden" id="otpPanel">
+            <h2>Seller Recovery</h2>
+            <p class="auth-sub" id="otpSub">We sent a 6-digit verification code to your registered business email.</p>
+            <form id="otpForm" novalidate>
+                <div class="field">
+                    <label for="otpCode">6-Digit Code</label>
+                    <input type="text" id="otpCode" placeholder="Enter OTP from email" required maxlength="6" pattern="\d{6}">
+                </div>
+                <div class="field">
+                    <label for="resetPassword">New Password</label>
+                    <input type="password" id="resetPassword" placeholder="Enter new password" required>
+                </div>
+                <p id="otpMsg" class="form-message"></p>
+                <button type="submit" class="auth-btn" id="otpBtn">Verify & Reset Password</button>
+            </form>
+            <p class="switch-hint">Didn't get it? <button type="button" class="link-btn" id="resendOtpBtn">Resend Code</button></p>
+            <p class="switch-hint">Back to <button type="button" class="link-btn" onclick="switchTab('login')">Login</button></p>
         </div>
     </div>
 </div>

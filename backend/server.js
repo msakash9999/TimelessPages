@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const crypto = require("crypto");
 const path = require("path");
@@ -32,95 +32,13 @@ const app = express();
 const frontendDir = path.join(__dirname, "..", "frontend");
 const activeAdminSessions = new Map();
 const activeSellerSessions = new Map();
+const featuredSeedBooks = require("./seedData");
 const DEFAULT_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@timelesspages.com").toLowerCase();
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const DEFAULT_ADMIN_NAME = process.env.ADMIN_NAME || "TimelessPages Admin";
 const USER_SESSION_COOKIE = "tp_user_session";
 const ADMIN_SESSION_COOKIE = "tp_admin_session";
 const SELLER_SESSION_COOKIE = "tp_seller_session";
-const featuredSeedBooks = [
-  {
-    title: "Origin of Species",
-    author: "Charles Darwin",
-    price: 349,
-    imageUrl: "assets/originOfSpecies.png",
-    category: "science",
-    description: "Classic Edition",
-    featured: true
-  },
-  {
-    title: "The Blind Watchmaker",
-    author: "Richard Dawkins",
-    price: 329,
-    imageUrl: "assets/richardDawkins.png",
-    category: "science",
-    description: "Science Collection",
-    featured: true
-  },
-  {
-    title: "War and Peace",
-    author: "Leo Tolstoy",
-    price: 399,
-    imageUrl: "assets/warAndPeace.png",
-    category: "novels",
-    description: "Literary Collection",
-    featured: true
-  },
-  {
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    price: 199,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg",
-    category: "story",
-    description: "Story Books",
-    featured: false
-  },
-  {
-    title: "Meditations",
-    author: "Marcus Aurelius",
-    price: 179,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780812968255-M.jpg",
-    category: "philosophy",
-    description: "Philosophy Books",
-    featured: false
-  },
-  {
-    title: "The Histories",
-    author: "Herodotus",
-    price: 229,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780140449082-M.jpg",
-    category: "history",
-    description: "History Books",
-    featured: false
-  },
-  {
-    title: "The Alchemist",
-    author: "Paulo Coelho",
-    price: 249,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780061122415-M.jpg",
-    category: "novels",
-    description: "Modern Classic",
-    featured: false
-  },
-  {
-    title: "Bhagavad Gita",
-    author: "Vyasa",
-    price: 189,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780140449181-M.jpg",
-    category: "religious",
-    description: "Religious Books",
-    featured: false
-  },
-  {
-    title: "Watchmen",
-    author: "Alan Moore",
-    price: 299,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780930289232-M.jpg",
-    category: "comics",
-    description: "Comics Collection",
-    featured: false
-  }
-];
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -130,6 +48,27 @@ app.use((req, res, next) => {
     express.json()(req, res, next);
   }
 });
+
+// Force seed route for debugging/initialization
+app.get("/force-seed", async (req, res) => {
+  try {
+    await seedBooks();
+    res.json({ message: "Seeding manual trigger successful" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/books/science", async (req, res) => {
+  try {
+    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
+    res.json(books);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.use(express.static(frontendDir));
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -330,7 +269,7 @@ function requireSeller(req, res, next) {
 function requireAdminOrSeller(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  
+
   const adminSession = activeAdminSessions.get(token);
   if (adminSession) {
     req.adminSession = adminSession;
@@ -352,7 +291,7 @@ function requireAdminOrSeller(req, res, next) {
 function requireUser(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  
+
   if (!token) return res.status(401).json({ message: "Authentication required" });
 
   try {
@@ -366,10 +305,7 @@ function requireUser(req, res, next) {
 
 async function seedAdmin() {
   const existingAdmin = await Admin.findOne({ email: DEFAULT_ADMIN_EMAIL });
-
-  if (existingAdmin) {
-    return existingAdmin;
-  }
+  if (existingAdmin) return existingAdmin;
 
   const admin = new Admin({
     email: DEFAULT_ADMIN_EMAIL,
@@ -378,25 +314,13 @@ async function seedAdmin() {
   });
 
   await admin.save();
-  console.log(`Seeded admin login: ${DEFAULT_ADMIN_EMAIL}`);
   return admin;
 }
 
-async function seedBooks() {
-  const existingBooksCount = await Book.countDocuments();
 
-  if (existingBooksCount > 0) {
-    return;
-  }
-
-  await Book.insertMany(featuredSeedBooks);
-  console.log("Seeded starter books");
-}
 
 function normalizeBookPayload(body) {
-  if (!body || typeof body !== 'object') {
-    throw new Error("Invalid request body â€” expected JSON");
-  }
+  if (!body || typeof body !== 'object') throw new Error("Invalid request body");
   return {
     title: String(body.title || "").trim(),
     author: String(body.author || "").trim(),
@@ -408,6 +332,10 @@ function normalizeBookPayload(body) {
   };
 }
 
+
+
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
 app.get("/admin.html", requireAdminPageSession, (req, res) => {
   res.sendFile(path.join(frontendDir, "admin.html"));
 });
@@ -417,6 +345,15 @@ app.get("/seller-dashboard.html", requireSellerPageSession, (req, res) => {
 });
 
 
+
+app.get("/books/science", async (req, res) => {
+  try {
+    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
+    res.json(books);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 app.use(express.static(frontendDir));
 
@@ -478,6 +415,20 @@ mongoose.connect(process.env.MONGODB_URI)
     await seedBooks();
   })
   .catch((err) => console.log("MongoDB error:", err));
+
+async function seedBooks() {
+  for (const book of featuredSeedBooks) {
+    try {
+      await Book.findOneAndUpdate(
+        { title: book.title, author: book.author },
+        { ...book },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+      );
+    } catch (err) {
+      console.warn(`Failed to seed book: ${book.title}`, err.message);
+    }
+  }
+}
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -600,7 +551,7 @@ app.post("/api/auth/login", async (req, res) => {
     sendLoginAlertEmail(user, req).catch((error) => {
       console.error("Login alert email failed:", error.message);
     });
-    
+
     setSessionCookie(res, USER_SESSION_COOKIE, token, getSessionCookieOptions());
 
     res.json({
@@ -655,7 +606,7 @@ app.post("/api/auth/verify-otp", async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ userId: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    
+
     setSessionCookie(res, USER_SESSION_COOKIE, token, getSessionCookieOptions());
 
     res.json({
@@ -692,10 +643,10 @@ app.post("/api/user/cart", requireUser, async (req, res) => {
   try {
     const user = await User.findById(req.userSession.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.cart = req.body.cart || [];
     await user.save();
-    
+
     res.json({ message: "Cart synced successfully", cart: user.cart });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -716,10 +667,10 @@ app.post("/api/user/wishlist", requireUser, async (req, res) => {
   try {
     const user = await User.findById(req.userSession.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.wishlist = req.body.wishlist || [];
     await user.save();
-    
+
     res.json({ message: "Wishlist synced successfully", wishlist: user.wishlist });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -752,7 +703,7 @@ app.post("/seller-register", async (req, res) => {
     });
 
     await seller.save();
-    
+
     res.status(200).json({
       message: "Seller account created successfully! You can now log in."
     });
@@ -831,7 +782,7 @@ app.get("/users", requireAdmin, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
-  } catch (err) { 
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -927,14 +878,14 @@ app.get("/books", async (req, res) => {
     const limit = Number(req.query.limit);
     const sellerId = String(req.query.sellerId || "").trim();
 
-    if (category) {
-      query.category = category;
+    if (category === "science") {
+      endpoint = "/books/science";
     }
 
     if (featured === "true") {
       query.featured = true;
     }
-    
+
     if (sellerId) {
       query.sellerId = sellerId;
     }
@@ -1004,7 +955,7 @@ app.post("/books", requireAdminOrSeller, async (req, res) => {
 app.delete("/books/:id", requireAdminOrSeller, async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
-    
+
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }

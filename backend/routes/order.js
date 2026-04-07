@@ -12,9 +12,6 @@ module.exports = function (app, requireUser) {
       const { products, totalAmount, address } = req.body;
       const userId = req.userSession.userId;
 
-      console.log(`[Order] Creating order for user: ${userId}`);
-      console.log(`[Order] Incoming products:`, JSON.stringify(products));
-
       if (!products || products.length === 0) {
         return res.status(400).json({ message: "No products in order" });
       }
@@ -99,12 +96,9 @@ module.exports = function (app, requireUser) {
 
       // Send confirmation emails in try/catch to prevent order loss on mail failure
       try {
-        console.log(`Attempting to send COD confirmation to: ${user.email}`);
-        
         // Email to User
         await sendEmail(user.email, "Order Confirmation (Cash on Delivery) - TimelessPages", emailHtml);
-        console.log("User email sent successfully.");
-        
+
         // Email to Admin
         const adminEmail = process.env.EMAIL_USER || "admin@timelesspages.com";
         await sendEmail(adminEmail, `New COD Order #${newOrder._id}`, `
@@ -114,7 +108,6 @@ module.exports = function (app, requireUser) {
           <p>Total: ₹${totalAmount}</p>
           <p>Address: ${address.addressLine}, ${address.city}</p>
         `);
-        console.log("Admin notification email sent successfully.");
       } catch (mailErr) {
         console.error("Mail dispatch failed, but order was saved:", mailErr);
       }
@@ -136,9 +129,7 @@ module.exports = function (app, requireUser) {
   router.get("/my-orders", requireUser, async (req, res) => {
     try {
       const userId = req.userSession.userId;
-      console.log(`[Order] Fetching orders for user: ${userId}`);
       const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-      console.log(`[Order] Found ${orders.length} orders`);
       res.json(orders);
     } catch (err) {
       console.error("Fetch Orders Error:", err);

@@ -219,6 +219,7 @@ html {
   background: radial-gradient(circle at top, #ffcf60, #e2af2a 72%);
   clip-path: polygon(0 33%, 6% 16%, 12% 33%, 18% 16%, 24% 33%, 30% 16%, 36% 33%, 42% 16%, 48% 33%, 54% 16%, 60% 33%, 66% 16%, 72% 33%, 78% 16%, 84% 33%, 90% 16%, 96% 33%, 100% 44%, 100% 100%, 0 100%);
   animation: rise-in 0.8s ease-out 0.15s both;
+  pointer-events: none;
 }
 
 .hero-book {
@@ -230,6 +231,7 @@ html {
   filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.28));
   border-radius: 18px;
   animation: rise-in 0.8s ease-out 0.2s both, book-float 4.2s ease-in-out 1s infinite;
+  pointer-events: none;
 }
 
 .star-badge,
@@ -246,10 +248,13 @@ html {
   right: 12%;
   top: 55%;
   animation: star-pulse 2.2s ease-in-out 0.9s infinite;
+  pointer-events: none;
 }
 
 .catalog {
   padding: 24px 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .section-head {
@@ -1229,6 +1234,14 @@ html {
     padding-top: 10px;
 }
 
+.book-tile .storybook-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
 .wishlist-top {
     position: absolute;
     top: 14px;
@@ -1272,11 +1285,29 @@ html {
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
+.book-tile .storybook-btn {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
 .storybook-btn:hover {
     transform: translateY(-1px);
 }
 
 .buy-btn {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(241, 141, 23, 0.25);
+}
+
+.book-tile .buy-btn {
     background: var(--accent);
     color: #fff;
     box-shadow: 0 8px 18px rgba(241, 141, 23, 0.25);
@@ -1288,7 +1319,17 @@ html {
     color: var(--text);
 }
 
+.book-tile .cart-btn {
+    background: transparent;
+    border-color: #cfcfcf;
+    color: var(--text);
+}
+
 .buy-btn:hover {
+    background: var(--accent-deep);
+}
+
+.book-tile .buy-btn:hover {
     background: var(--accent-deep);
 }
 
@@ -1490,3 +1531,62 @@ html {
         width: 100%;
     }
 }
+ / *   S e c o n d - h a n d   B o o k   P r i c i n g   &   D i s c o u n t   S t y l e s   * / 
+ . p r i c e - w r a p   { 
+     d i s p l a y :   f l e x ; 
+     a l i g n - i t e m s :   c e n t e r ; 
+     g a p :   1 2 p x ; 
+     m a r g i n - t o p :   5 p x ; 
+ } 
+ 
+ . o r i g i n a l - p r i c e   { 
+     t e x t - d e c o r a t i o n :   l i n e - t h r o u g h ; 
+     c o l o r :   # 9 9 9 ; 
+     f o n t - s i z e :   0 . 8 5 e m ; 
+     f o n t - w e i g h t :   4 0 0 ; 
+ } 
+ 
+ . d i s c o u n t - b a d g e   { 
+     p o s i t i o n :   a b s o l u t e ; 
+     t o p :   1 5 p x ; 
+     l e f t :   1 5 p x ; 
+     b a c k g r o u n d :   # f 1 8 d 1 7 ; 
+     c o l o r :   # f f f ; 
+     p a d d i n g :   5 p x   1 2 p x ; 
+     b o r d e r - r a d i u s :   8 p x ; 
+     f o n t - s i z e :   0 . 8 r e m ; 
+     f o n t - w e i g h t :   7 0 0 ; 
+     z - i n d e x :   1 0 ; 
+     b o x - s h a d o w :   0   4 p x   1 5 p x   r g b a ( 2 4 1 ,   1 4 1 ,   2 3 ,   0 . 4 ) ; 
+ } 
+ 
+ . p r o d u c t - c a r d   { 
+     p o s i t i o n :   r e l a t i v e ; 
+ } 
+  
+ 
+ / *   S e c o n d - h a n d   C o n d i t i o n   B a d g e   * / 
+ . c o n d i t i o n - b a d g e   { 
+         p o s i t i o n :   a b s o l u t e ; 
+         t o p :   1 5 p x ; 
+         r i g h t :   1 5 p x ;   / *   O p p o s i t e   o f   w i s h l i s t   * / 
+         b a c k g r o u n d :   r g b a ( 2 4 1 ,   1 4 1 ,   2 3 ,   0 . 1 5 ) ; 
+         c o l o r :   # f 1 8 d 1 7 ; 
+         p a d d i n g :   4 p x   1 0 p x ; 
+         b o r d e r - r a d i u s :   4 p x ; 
+         f o n t - s i z e :   0 . 7 r e m ; 
+         f o n t - w e i g h t :   7 0 0 ; 
+         l e t t e r - s p a c i n g :   0 . 5 p x ; 
+         t e x t - t r a n s f o r m :   u p p e r c a s e ; 
+         b o r d e r :   1 p x   s o l i d   r g b a ( 2 4 1 ,   1 4 1 ,   2 3 ,   0 . 3 ) ; 
+         z - i n d e x :   5 ; 
+         p o i n t e r - e v e n t s :   n o n e ; 
+ } 
+ 
+ . d a r k - m o d e   . c o n d i t i o n - b a d g e   { 
+         b a c k g r o u n d :   r g b a ( 2 4 1 ,   1 4 1 ,   2 3 ,   0 . 1 ) ; 
+         c o l o r :   # f 1 8 d 1 7 ; 
+         b o r d e r - c o l o r :   r g b a ( 2 4 1 ,   1 4 1 ,   2 3 ,   0 . 2 ) ; 
+ } 
+  
+ 

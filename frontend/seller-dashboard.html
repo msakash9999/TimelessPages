@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,62 +8,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="seller-dashboard.css">
 </head>
+
 <body>
 
-<nav class="seller-nav">
-    <a href="index.html" class="seller-brand">TimelessPages Seller Portal</a>
-    <div class="seller-nav-right">
-        <span class="seller-greeting" id="sellerGreeting">Welcome, Store</span>
-        <a href="index.html" class="visit-site-btn" target="_blank">Visit Site</a>
-        <button id="logoutBtn" class="logout-btn">Log Out</button>
-    </div>
-</nav>
+    <nav class="seller-nav">
+        <a href="index.html" class="seller-brand">TimelessPages Seller Portal</a>
+        <div class="seller-nav-right">
+            <span class="seller-greeting" id="sellerGreeting">Welcome, Store</span>
+            <a href="index.html" class="visit-site-btn" target="_blank">Visit Site</a>
+            <button id="logoutBtn" class="logout-btn">Log Out</button>
+        </div>
+    </nav>
 
-<div class="dashboard-container">
-    <div class="panel-card">
-        <h2>Publish a New Book</h2>
-        <form id="sellerBookForm" class="seller-form">
-            <div class="form-row">
-                <input type="text" id="bookTitle" placeholder="Book Title" required>
-                <input type="text" id="bookAuthor" placeholder="Author Name" required>
-            </div>
-            <div class="form-row">
-                <input type="number" id="bookPrice" placeholder="Price (₹)" min="1" required>
-                <select id="bookCategory" required>
-                    <option value="">Select Category</option>
-                    <option value="story">Story</option>
-                    <option value="novels">Novels</option>
-                    <option value="philosophy">Philosophy</option>
-                    <option value="history">History</option>
-                    <option value="religious">Religious</option>
-                    <option value="comics">Comics</option>
-                    <option value="science">Science</option>
-                    <option value="academic">Academic Books</option>
-                </select>
-            </div>
-            
-            <label class="form-label">Book Cover Image</label>
-            <input type="file" id="bookImageFile" accept="image/*">
-            <span class="form-hint">— or paste an image URL —</span>
-            <input type="text" id="bookImageUrl" placeholder="https://example.com/cover.jpg">
-            
-            <label class="form-label">Description</label>
-            <textarea id="bookDescription" placeholder="A short synopsis of the book..."></textarea>
-            
-            <!-- Sellers cannot feature their own books, so no featured checkbox here! -->
-            
-            <button type="submit" class="primary-btn">Publish to TimelessPages</button>
-        </form>
-        <p id="sellerFormMessage" class="panel-message"></p>
+    <div class="dashboard-container">
+        <div class="panel-card">
+            <h2>Publish a New Book</h2>
+            <form id="sellerBookForm" class="seller-form">
+                <div class="form-row">
+                    <input type="text" id="bookTitle" placeholder="Book Title" required>
+                    <input type="text" id="bookAuthor" placeholder="Author Name" required>
+                </div>
+                <div class="form-row">
+                    <input type="number" id="bookPrice" placeholder="Price (₹)" min="1" required>
+                    <select id="bookCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="story">Story</option>
+                        <option value="novels">Novels</option>
+                        <option value="philosophy">Philosophy</option>
+                        <option value="history">History</option>
+                        <option value="religious">Religious</option>
+                        <option value="comics">Comics</option>
+                        <option value="science">Science</option>
+                        <option value="academic">Academic Books</option>
+                    </select>
+                </div>
+
+                <label class="form-label">Book Cover Image</label>
+                <input type="file" id="bookImageFile" accept="image/*">
+                <span class="form-hint">— or paste an image URL —</span>
+                <input type="text" id="bookImageUrl" placeholder="https://example.com/cover.jpg">
+
+                <label class="form-label">Description</label>
+                <textarea id="bookDescription" placeholder="A short synopsis of the book..."></textarea>
+
+                <!-- Sellers cannot feature their own books, so no featured checkbox here! -->
+
+                <button type="submit" class="primary-btn">Publish to TimelessPages</button>
+            </form>
+            <p id="sellerFormMessage" class="panel-message"></p>
+        </div>
+
+        <div class="panel-card">
+            <h2>Your Catalog</h2>
+            <!-- Sellers can view books they've already added -->
+            <div id="booksList"></div>
+        </div>
     </div>
 
-    <div class="panel-card">
-        <h2>Your Catalog</h2>
-        <!-- Sellers can view books they've already added -->
-        <div id="booksList"></div>
-    </div>
-</div>
-
-<script src="seller.js"></script>
+    <script src="seller.js"></script>
 </body>
+
 </html>

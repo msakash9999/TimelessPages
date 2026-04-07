@@ -1,8 +1,7 @@
 const Razorpay = require("razorpay");
 require("dotenv").config();
 
-console.log("Key ID from env:", process.env.RAZORPAY_KEY_ID);
-console.log("Key Secret from env:", process.env.RAZORPAY_KEY_SECRET);
+console.log("Razorpay configuration initialized from environment.");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "dummy",
