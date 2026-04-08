@@ -1,0 +1,13 @@
+[33m780bd26[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: rebase (finish): returning to refs/heads/main
+[33m780bd26[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{1}: commit (amend): all are now working 222
+[33m77e65f4[m HEAD@{2}: commit (amend): all are now working 222
+[33m81e48ea[m HEAD@{3}: pull origin main --rebase (start): checkout 81e48ea4a783cb8a85dd4818a2ebffc0b585e7cf
+[33mce9376e[m HEAD@{4}: commit (amend): all are now working too
+[33mcfc8564[m HEAD@{5}: commit (amend): all are now working too
+[33m81e48ea[m HEAD@{6}: commit (amend): all are now working
+[33m8f00578[m HEAD@{7}: pull https://github.com/msakash9999/timelesspages.git: Fast-forward
+[33mb283a36[m HEAD@{8}: pull https://github.com/msakash9999/timelesspages.git: Fast-forward
+[33m6f11530[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m)[m HEAD@{9}: pull https://github.com/msakash9999/timelesspages.git main: Fast-forward
+[33m5715609[m HEAD@{10}: pull https://github.com/msakash9999/timelesspages.git main: Fast-forward
+[33maf3c884[m HEAD@{11}: reset: moving to origin/main
+[33maf3c884[m HEAD@{12}: clone: from https://github.com/msakash9999/timelesspages.git
