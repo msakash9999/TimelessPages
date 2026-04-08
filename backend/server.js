@@ -330,7 +330,7 @@ function requireSeller(req, res, next) {
 function requireAdminOrSeller(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  
+
   const adminSession = activeAdminSessions.get(token);
   if (adminSession) {
     req.adminSession = adminSession;
@@ -352,7 +352,7 @@ function requireAdminOrSeller(req, res, next) {
 function requireUser(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  
+
   if (!token) return res.status(401).json({ message: "Authentication required" });
 
   try {
@@ -418,79 +418,125 @@ app.get("/seller-dashboard.html", requireSellerPageSession, (req, res) => {
 
 
 
-app.use(express.static(frontendDir));
+app.post("/seller-register", async (req, res) => {
+  try {
+    const name = String(req.body.name || "").trim();
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const storeName = String(req.body.storeName || "").trim();
+    const password = String(req.body.password || "");
 
-function createVerificationToken(user) {
-  return jwt.sign(
-    { userId: user._id, email: user.email, purpose: "email_verification" },
-    JWT_SECRET,
-    { expiresIn: "10m" }
-  );
-}
+    if (!name || !email || !storeName || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-async function sendVerificationEmail(user, token) {
-  const verificationLink = `http://localhost:5000/api/auth/verify/${token}`;
-  const subject = "Verify your TimelessPages account";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Please verify your email by clicking the link below:</p>
-    <p><a href="${verificationLink}">${verificationLink}</a></p>
-    <p>This link expires in 10 minutes.</p>
-  `;
+    const existingSeller = await Seller.findOne({ email });
+    if (existingSeller) {
+      return res.status(400).json({ message: "Seller email already in use." });
+    }
 
-  await sendEmail(user.email, subject, html);
-}
+    const seller = new Seller({
+      name,
+      email,
+      storeName,
+      password: hashPassword(password)
+    });
 
-async function sendLoginAlertEmail(user, req) {
-  const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
-  const ipAddress = forwardedFor || req.socket?.remoteAddress || req.ip || "Unknown";
-  const userAgent = String(req.headers["user-agent"] || "Unknown device");
-  const loginTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-  const subject = "New login to your TimelessPages account";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Your TimelessPages account was just logged in successfully.</p>
-    <p><strong>Time:</strong> ${loginTime}</p>
-    <p><strong>IP Address:</strong> ${ipAddress}</p>
-    <p><strong>Device/Browser:</strong> ${userAgent}</p>
-    <p>If this was not you, please change your password immediately.</p>
-  `;
+    await seller.save();
 
-  await sendEmail(user.email, subject, html);
-}
-
-async function sendOtpEmail(user, otp) {
-  const subject = "Your TimelessPages verification code";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Your verification code is:</p>
-    <h2 style="letter-spacing: 4px;">${otp}</h2>
-    <p>This code expires in 10 minutes.</p>
-  `;
-
-  await sendEmail(user.email, subject, html);
-}
-
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log("MongoDB connected");
-    await seedAdmin();
-    await seedBooks();
-  })
-  .catch((err) => console.log("MongoDB error:", err));
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+    res.status(200).json({
+      message: "Seller account created successfully! You can now log in."
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
+app.post("/seller-login", async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-const paymentRoutes = require("./routes/payment");
-const orderRoutes = require("./routes/order");
+    const seller = await Seller.findOne({ email });
 
-app.use("/api/payment", paymentRoutes(app, requireUser));
-app.use("/api/order", orderRoutes(app, requireUser));
-app.use("/api/orders", orderRoutes(app, requireUser)); // Fallback alias for robustness
+    if (!seller || !verifyPassword(password, seller.password)) {
+      return res.status(401).json({ message: "Invalid seller credentials" });
+    }
+
+    if (seller.blocked) {
+      return res.status(403).json({ message: "Your seller account has been blocked." });
+    }
+
+    const token = createSellerToken(seller);
+
+    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
+
+    res.json({
+      message: "Login successful",
+      token,
+      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post("/seller-send-otp", async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const seller = await Seller.findOne({ email });
+    if (!seller) return res.status(404).json({ message: "Seller not found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    seller.otp = otp;
+    seller.otpExpires = new Date(Date.now() + 10 * 60000);
+    await seller.save();
+
+    await sendOtpEmail(seller, otp);
+
+    res.json({ message: "OTP sent successfully to registered seller email." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post("/seller-verify-otp", async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const otp = String(req.body.otp || "").trim();
+    const newPassword = String(req.body.newPassword || "");
+
+    const seller = await Seller.findOne({ email });
+    if (!seller) return res.status(404).json({ message: "Seller not found" });
+
+    if (seller.otp !== otp || seller.otpExpires < new Date()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    if (!newPassword.trim() || newPassword.trim().length < 6) {
+      return res.status(400).json({ message: "Please enter a new password with at least 6 characters" });
+    }
+
+    seller.otp = undefined;
+    seller.otpExpires = undefined;
+    seller.password = hashPassword(newPassword.trim());
+    await seller.save();
+
+    const token = createSellerToken(seller);
+    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
+
+    res.json({
+      message: "OTP verified and seller password reset successful.",
+      token,
+      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 app.post("/api/auth/register", async (req, res) => {
   try {
@@ -600,7 +646,7 @@ app.post("/api/auth/login", async (req, res) => {
     sendLoginAlertEmail(user, req).catch((error) => {
       console.error("Login alert email failed:", error.message);
     });
-    
+
     setSessionCookie(res, USER_SESSION_COOKIE, token, getSessionCookieOptions());
 
     res.json({
@@ -655,7 +701,7 @@ app.post("/api/auth/verify-otp", async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ userId: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    
+
     setSessionCookie(res, USER_SESSION_COOKIE, token, getSessionCookieOptions());
 
     res.json({
@@ -692,10 +738,10 @@ app.post("/api/user/cart", requireUser, async (req, res) => {
   try {
     const user = await User.findById(req.userSession.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.cart = req.body.cart || [];
     await user.save();
-    
+
     res.json({ message: "Cart synced successfully", cart: user.cart });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -716,122 +762,100 @@ app.post("/api/user/wishlist", requireUser, async (req, res) => {
   try {
     const user = await User.findById(req.userSession.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.wishlist = req.body.wishlist || [];
     await user.save();
-    
+
     res.json({ message: "Wishlist synced successfully", wishlist: user.wishlist });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+app.use(express.static(frontendDir));
 
-// SELLER API
-app.post("/seller-register", async (req, res) => {
-  try {
-    const name = String(req.body.name || "").trim();
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const storeName = String(req.body.storeName || "").trim();
-    const password = String(req.body.password || "");
+function createVerificationToken(user) {
+  return jwt.sign(
+    { userId: user._id, email: user.email, purpose: "email_verification" },
+    JWT_SECRET,
+    { expiresIn: "10m" }
+  );
+}
 
-    if (!name || !email || !storeName || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+async function sendVerificationEmail(user, token) {
+  const verificationLink = `http://localhost:5000/api/auth/verify/${token}`;
+  const subject = "Verify your TimelessPages account";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Please verify your email by clicking the link below:</p>
+    <p><a href="${verificationLink}">${verificationLink}</a></p>
+    <p>This link expires in 10 minutes.</p>
+  `;
 
-    const existingSeller = await Seller.findOne({ email });
-    if (existingSeller) {
-      return res.status(400).json({ message: "Seller email already in use." });
-    }
+  await sendEmail(user.email, subject, html);
+}
 
-    const seller = new Seller({
-      name,
-      email,
-      storeName,
-      password: hashPassword(password)
-    });
+async function sendLoginAlertEmail(user, req) {
+  const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  const ipAddress = forwardedFor || req.socket?.remoteAddress || req.ip || "Unknown";
+  const userAgent = String(req.headers["user-agent"] || "Unknown device");
+  const loginTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const subject = "New login to your TimelessPages account";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Your TimelessPages account was just logged in successfully.</p>
+    <p><strong>Time:</strong> ${loginTime}</p>
+    <p><strong>IP Address:</strong> ${ipAddress}</p>
+    <p><strong>Device/Browser:</strong> ${userAgent}</p>
+    <p>If this was not you, please change your password immediately.</p>
+  `;
 
-    await seller.save();
-    
-    res.status(200).json({
-      message: "Seller account created successfully! You can now log in."
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  await sendEmail(user.email, subject, html);
+}
+
+async function sendOtpEmail(user, otp) {
+  const subject = "Your TimelessPages verification code";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Your verification code is:</p>
+    <h2 style="letter-spacing: 4px;">${otp}</h2>
+    <p>This code expires in 10 minutes.</p>
+  `;
+
+  await sendEmail(user.email, subject, html);
+}
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(async () => {
+    console.log("MongoDB connected");
+    await seedAdmin();
+    await seedBooks();
+  })
+  .catch((err) => console.log("MongoDB error:", err));
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
-app.post("/seller-login", async (req, res) => {
-  try {
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const password = String(req.body.password || "");
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
 
-    const seller = await Seller.findOne({ email });
+const paymentRoutes = require("./routes/payment");
+const orderRoutes = require("./routes/order");
 
-    if (!seller || !verifyPassword(password, seller.password)) {
-      return res.status(401).json({ message: "Invalid seller credentials" });
-    }
+app.use("/api/payment", paymentRoutes(app, requireUser));
+app.use("/api/order", orderRoutes(app, requireUser));
+app.use("/api/orders", orderRoutes(app, requireUser)); // Fallback alias for robustness
 
-    if (seller.blocked) {
-      return res.status(403).json({ message: "Your seller account has been blocked." });
-    }
 
-    const token = createSellerToken(seller);
+app.use(express.static(frontendDir));
 
-    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
-
-    res.json({
-      message: "Login successful",
-      token,
-      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.get("/sellers", requireAdmin, async (req, res) => {
-  try {
-    const sellers = await Seller.find().sort({ createdAt: -1 });
-    res.json(sellers);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.patch("/sellers/:id/block", requireAdmin, async (req, res) => {
-  try {
-    const seller = await Seller.findById(req.params.id);
-    if (!seller) return res.status(404).json({ message: "Seller not found" });
-    seller.blocked = !seller.blocked;
-    await seller.save();
-    res.json({ message: seller.blocked ? "Seller blocked" : "Seller unblocked", blocked: seller.blocked });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.delete("/sellers/:id", requireAdmin, async (req, res) => {
-  try {
-    const deleted = await Seller.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Seller not found" });
-    // Also delete their books? I will just delete the seller for now
-    res.json({ message: "Seller deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
 
 // USER MANAGEMENT (ADMIN ONLY)
 app.get("/users", requireAdmin, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
-  } catch (err) { 
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -934,7 +958,7 @@ app.get("/books", async (req, res) => {
     if (featured === "true") {
       query.featured = true;
     }
-    
+
     if (sellerId) {
       query.sellerId = sellerId;
     }
@@ -1004,7 +1028,7 @@ app.post("/books", requireAdminOrSeller, async (req, res) => {
 app.delete("/books/:id", requireAdminOrSeller, async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
-    
+
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     }
