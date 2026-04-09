@@ -288,4 +288,101 @@ module.exports = [
     category: "science",
     description: "Medicine and mortality reconsidered."
   }
+,
+  {
+    title: "Clean Code",
+    author: "Robert C. Martin",
+    price: 549,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780132350884-M.jpg",
+    category: "bca",
+    description: "A Handbook of Agile Software Craftsmanship"
+  },
+  {
+    title: "Introduction to Algorithms",
+    author: "Cormen, Leiserson",
+    price: 799,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780262033848-M.jpg",
+    category: "bca",
+    description: "The standard textbook for algorithms."
+  },
+  {
+    title: "Principles of Marketing",
+    author: "Philip Kotler",
+    price: 699,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780132555906-M.jpg",
+    category: "bba",
+    description: "The bible of marketing."
+  },
+  {
+    title: "Management",
+    author: "Stephen P. Robbins",
+    price: 599,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780073530680-M.jpg",
+    category: "bba",
+    description: "Comprehensive management fundamentals."
+  },
+  {
+    title: "Financial Accounting",
+    author: "T.S. Grewal",
+    price: 429,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780070263857-M.jpg",
+    category: "bcom",
+    description: "Essentials of commerce accounting."
+  },
+  {
+    title: "Business Law",
+    author: "N.D. Kapoor",
+    price: 449,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9789352039098-M.jpg",
+    category: "bcom",
+    description: "Mercantile law and practices."
+  },
+  {
+    title: "Mass Communication Theory",
+    author: "Denis McQuail",
+    price: 599,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780205029044-M.jpg",
+    category: "bajmc",
+    description: "Foundations of journalism."
+  },
+  {
+    title: "Public Relations: Strategies",
+    author: "Dennis Wilcox",
+    price: 529,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780205956159-M.jpg",
+    category: "bajmc",
+    description: "Strategic media relations."
+  },
+  {
+    title: "International Business",
+    author: "Charles W.L. Hill",
+    price: 649,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780078029240-M.jpg",
+    category: "bbib",
+    description: "Global trade and commerce logic."
+  },
+  {
+    title: "International Economics",
+    author: "Paul Krugman",
+    price: 699,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780132555586-M.jpg",
+    category: "bbib",
+    description: "Theory and policy of global economies."
+  },
+  {
+    title: "Fundamentals of Physics",
+    author: "Halliday, Resnick",
+    price: 749,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780471472445-M.jpg",
+    category: "bsc",
+    description: "Comprehensive physics for undergrads."
+  },
+  {
+    title: "Organic Chemistry",
+    author: "Morrison & Boyd",
+    price: 599,
+    imageUrl: "https://covers.openlibrary.org/b/isbn/9780321750907-M.jpg",
+    category: "bsc",
+    description: "Advanced chemical structures."
+  }
 ];

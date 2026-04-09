@@ -59,14 +59,7 @@ app.get("/force-seed", async (req, res) => {
   }
 });
 
-app.get("/books/science", async (req, res) => {
-  try {
-    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
-    res.json(books);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+
 
 app.use(express.static(frontendDir));
 
@@ -346,14 +339,7 @@ app.get("/seller-dashboard.html", requireSellerPageSession, (req, res) => {
 
 
 
-app.get("/books/science", async (req, res) => {
-  try {
-    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
-    res.json(books);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+
 
 app.use(express.static(frontendDir));
 
@@ -629,6 +615,45 @@ app.get("/api/user/profile", requireUser, async (req, res) => {
   }
 });
 
+app.patch("/api/user/profile", requireUser, async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const user = await User.findById(req.userSession.userId);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email: email.toLowerCase() });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already in use by another account" });
+      }
+      user.email = email.toLowerCase();
+    }
+
+    await user.save();
+
+    // Generate new token if name or email changed
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, name: user.name },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    setSessionCookie(res, USER_SESSION_COOKIE, token, getSessionCookieOptions());
+
+    res.json({
+      message: "Profile updated successfully",
+      token,
+      user: { name: user.name, email: user.email, phone: user.phone }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 app.get("/api/user/cart", requireUser, async (req, res) => {
   try {
     const user = await User.findById(req.userSession.userId);
@@ -878,8 +903,8 @@ app.get("/books", async (req, res) => {
     const limit = Number(req.query.limit);
     const sellerId = String(req.query.sellerId || "").trim();
 
-    if (category === "science") {
-      endpoint = "/books/science";
+    if (category) {
+      query.category = category;
     }
 
     if (featured === "true") {
@@ -973,6 +998,10 @@ app.delete("/books/:id", requireAdminOrSeller, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
