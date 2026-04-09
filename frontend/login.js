@@ -123,7 +123,7 @@
     localStorage.setItem('timelessPagesUserName',  name);
     localStorage.setItem('timelessPagesUserEmail', email);
     localStorage.setItem('timelessPagesUserToken', token);
-    localStorage.setItem('timelessPagesCart', JSON.stringify(cart));
+    localStorage.setItem('cart', JSON.stringify(cart));
     localStorage.setItem('timelessPagesWishlist', JSON.stringify(wishlist));
   }
 

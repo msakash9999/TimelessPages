@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const crypto = require("crypto");
 const path = require("path");
@@ -32,95 +32,13 @@ const app = express();
 const frontendDir = path.join(__dirname, "..", "frontend");
 const activeAdminSessions = new Map();
 const activeSellerSessions = new Map();
+const featuredSeedBooks = require("./seedData");
 const DEFAULT_ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@timelesspages.com").toLowerCase();
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 const DEFAULT_ADMIN_NAME = process.env.ADMIN_NAME || "TimelessPages Admin";
 const USER_SESSION_COOKIE = "tp_user_session";
 const ADMIN_SESSION_COOKIE = "tp_admin_session";
 const SELLER_SESSION_COOKIE = "tp_seller_session";
-const featuredSeedBooks = [
-  {
-    title: "Origin of Species",
-    author: "Charles Darwin",
-    price: 349,
-    imageUrl: "assets/originOfSpecies.png",
-    category: "science",
-    description: "Classic Edition",
-    featured: true
-  },
-  {
-    title: "The Blind Watchmaker",
-    author: "Richard Dawkins",
-    price: 329,
-    imageUrl: "assets/richardDawkins.png",
-    category: "science",
-    description: "Science Collection",
-    featured: true
-  },
-  {
-    title: "War and Peace",
-    author: "Leo Tolstoy",
-    price: 399,
-    imageUrl: "assets/warAndPeace.png",
-    category: "novels",
-    description: "Literary Collection",
-    featured: true
-  },
-  {
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    price: 199,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg",
-    category: "story",
-    description: "Story Books",
-    featured: false
-  },
-  {
-    title: "Meditations",
-    author: "Marcus Aurelius",
-    price: 179,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780812968255-M.jpg",
-    category: "philosophy",
-    description: "Philosophy Books",
-    featured: false
-  },
-  {
-    title: "The Histories",
-    author: "Herodotus",
-    price: 229,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780140449082-M.jpg",
-    category: "history",
-    description: "History Books",
-    featured: false
-  },
-  {
-    title: "The Alchemist",
-    author: "Paulo Coelho",
-    price: 249,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780061122415-M.jpg",
-    category: "novels",
-    description: "Modern Classic",
-    featured: false
-  },
-  {
-    title: "Bhagavad Gita",
-    author: "Vyasa",
-    price: 189,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780140449181-M.jpg",
-    category: "religious",
-    description: "Religious Books",
-    featured: false
-  },
-  {
-    title: "Watchmen",
-    author: "Alan Moore",
-    price: 299,
-    imageUrl: "https://covers.openlibrary.org/b/isbn/9780930289232-M.jpg",
-    category: "comics",
-    description: "Comics Collection",
-    featured: false
-  }
-];
 
 app.use(cors());
 app.use((req, res, next) => {
@@ -130,6 +48,27 @@ app.use((req, res, next) => {
     express.json()(req, res, next);
   }
 });
+
+// Force seed route for debugging/initialization
+app.get("/force-seed", async (req, res) => {
+  try {
+    await seedBooks();
+    res.json({ message: "Seeding manual trigger successful" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/books/science", async (req, res) => {
+  try {
+    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
+    res.json(books);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.use(express.static(frontendDir));
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -366,10 +305,7 @@ function requireUser(req, res, next) {
 
 async function seedAdmin() {
   const existingAdmin = await Admin.findOne({ email: DEFAULT_ADMIN_EMAIL });
-
-  if (existingAdmin) {
-    return existingAdmin;
-  }
+  if (existingAdmin) return existingAdmin;
 
   const admin = new Admin({
     email: DEFAULT_ADMIN_EMAIL,
@@ -378,25 +314,13 @@ async function seedAdmin() {
   });
 
   await admin.save();
-  console.log(`Seeded admin login: ${DEFAULT_ADMIN_EMAIL}`);
   return admin;
 }
 
-async function seedBooks() {
-  const existingBooksCount = await Book.countDocuments();
 
-  if (existingBooksCount > 0) {
-    return;
-  }
-
-  await Book.insertMany(featuredSeedBooks);
-  console.log("Seeded starter books");
-}
 
 function normalizeBookPayload(body) {
-  if (!body || typeof body !== 'object') {
-    throw new Error("Invalid request body â€” expected JSON");
-  }
+  if (!body || typeof body !== 'object') throw new Error("Invalid request body");
   return {
     title: String(body.title || "").trim(),
     author: String(body.author || "").trim(),
@@ -408,6 +332,10 @@ function normalizeBookPayload(body) {
   };
 }
 
+
+
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
 app.get("/admin.html", requireAdminPageSession, (req, res) => {
   res.sendFile(path.join(frontendDir, "admin.html"));
 });
@@ -418,125 +346,102 @@ app.get("/seller-dashboard.html", requireSellerPageSession, (req, res) => {
 
 
 
-app.post("/seller-register", async (req, res) => {
+app.get("/books/science", async (req, res) => {
   try {
-    const name = String(req.body.name || "").trim();
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const storeName = String(req.body.storeName || "").trim();
-    const password = String(req.body.password || "");
-
-    if (!name || !email || !storeName || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const existingSeller = await Seller.findOne({ email });
-    if (existingSeller) {
-      return res.status(400).json({ message: "Seller email already in use." });
-    }
-
-    const seller = new Seller({
-      name,
-      email,
-      storeName,
-      password: hashPassword(password)
-    });
-
-    await seller.save();
-
-    res.status(200).json({
-      message: "Seller account created successfully! You can now log in."
-    });
+    const books = await Book.find({ category: "science" }).sort({ createdAt: -1 }).limit(30);
+    res.json(books);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-app.post("/seller-login", async (req, res) => {
-  try {
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const password = String(req.body.password || "");
+app.use(express.static(frontendDir));
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+function createVerificationToken(user) {
+  return jwt.sign(
+    { userId: user._id, email: user.email, purpose: "email_verification" },
+    JWT_SECRET,
+    { expiresIn: "10m" }
+  );
+}
+
+async function sendVerificationEmail(user, token) {
+  const verificationLink = `http://localhost:5000/api/auth/verify/${token}`;
+  const subject = "Verify your TimelessPages account";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Please verify your email by clicking the link below:</p>
+    <p><a href="${verificationLink}">${verificationLink}</a></p>
+    <p>This link expires in 10 minutes.</p>
+  `;
+
+  await sendEmail(user.email, subject, html);
+}
+
+async function sendLoginAlertEmail(user, req) {
+  const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  const ipAddress = forwardedFor || req.socket?.remoteAddress || req.ip || "Unknown";
+  const userAgent = String(req.headers["user-agent"] || "Unknown device");
+  const loginTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const subject = "New login to your TimelessPages account";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Your TimelessPages account was just logged in successfully.</p>
+    <p><strong>Time:</strong> ${loginTime}</p>
+    <p><strong>IP Address:</strong> ${ipAddress}</p>
+    <p><strong>Device/Browser:</strong> ${userAgent}</p>
+    <p>If this was not you, please change your password immediately.</p>
+  `;
+
+  await sendEmail(user.email, subject, html);
+}
+
+async function sendOtpEmail(user, otp) {
+  const subject = "Your TimelessPages verification code";
+  const html = `
+    <p>Hello ${user.name || "there"},</p>
+    <p>Your verification code is:</p>
+    <h2 style="letter-spacing: 4px;">${otp}</h2>
+    <p>This code expires in 10 minutes.</p>
+  `;
+
+  await sendEmail(user.email, subject, html);
+}
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(async () => {
+    console.log("MongoDB connected");
+    await seedAdmin();
+    await seedBooks();
+  })
+  .catch((err) => console.log("MongoDB error:", err));
+
+async function seedBooks() {
+  for (const book of featuredSeedBooks) {
+    try {
+      await Book.findOneAndUpdate(
+        { title: book.title, author: book.author },
+        { ...book },
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+      );
+    } catch (err) {
+      console.warn(`Failed to seed book: ${book.title}`, err.message);
     }
-
-    const seller = await Seller.findOne({ email });
-
-    if (!seller || !verifyPassword(password, seller.password)) {
-      return res.status(401).json({ message: "Invalid seller credentials" });
-    }
-
-    if (seller.blocked) {
-      return res.status(403).json({ message: "Your seller account has been blocked." });
-    }
-
-    const token = createSellerToken(seller);
-
-    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
-
-    res.json({
-      message: "Login successful",
-      token,
-      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
+}
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
-app.post("/seller-send-otp", async (req, res) => {
-  try {
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const seller = await Seller.findOne({ email });
-    if (!seller) return res.status(404).json({ message: "Seller not found" });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    seller.otp = otp;
-    seller.otpExpires = new Date(Date.now() + 10 * 60000);
-    await seller.save();
 
-    await sendOtpEmail(seller, otp);
+const paymentRoutes = require("./routes/payment");
+const orderRoutes = require("./routes/order");
 
-    res.json({ message: "OTP sent successfully to registered seller email." });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.post("/seller-verify-otp", async (req, res) => {
-  try {
-    const email = String(req.body.email || "").trim().toLowerCase();
-    const otp = String(req.body.otp || "").trim();
-    const newPassword = String(req.body.newPassword || "");
-
-    const seller = await Seller.findOne({ email });
-    if (!seller) return res.status(404).json({ message: "Seller not found" });
-
-    if (seller.otp !== otp || seller.otpExpires < new Date()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    if (!newPassword.trim() || newPassword.trim().length < 6) {
-      return res.status(400).json({ message: "Please enter a new password with at least 6 characters" });
-    }
-
-    seller.otp = undefined;
-    seller.otpExpires = undefined;
-    seller.password = hashPassword(newPassword.trim());
-    await seller.save();
-
-    const token = createSellerToken(seller);
-    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
-
-    res.json({
-      message: "OTP verified and seller password reset successful.",
-      token,
-      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+app.use("/api/payment", paymentRoutes(app, requireUser));
+app.use("/api/order", orderRoutes(app, requireUser));
+app.use("/api/orders", orderRoutes(app, requireUser)); // Fallback alias for robustness
 
 app.post("/api/auth/register", async (req, res) => {
   try {
@@ -772,83 +677,105 @@ app.post("/api/user/wishlist", requireUser, async (req, res) => {
   }
 });
 
-app.use(express.static(frontendDir));
 
-function createVerificationToken(user) {
-  return jwt.sign(
-    { userId: user._id, email: user.email, purpose: "email_verification" },
-    JWT_SECRET,
-    { expiresIn: "10m" }
-  );
-}
+// SELLER API
+app.post("/seller-register", async (req, res) => {
+  try {
+    const name = String(req.body.name || "").trim();
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const storeName = String(req.body.storeName || "").trim();
+    const password = String(req.body.password || "");
 
-async function sendVerificationEmail(user, token) {
-  const verificationLink = `http://localhost:5000/api/auth/verify/${token}`;
-  const subject = "Verify your TimelessPages account";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Please verify your email by clicking the link below:</p>
-    <p><a href="${verificationLink}">${verificationLink}</a></p>
-    <p>This link expires in 10 minutes.</p>
-  `;
+    if (!name || !email || !storeName || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  await sendEmail(user.email, subject, html);
-}
+    const existingSeller = await Seller.findOne({ email });
+    if (existingSeller) {
+      return res.status(400).json({ message: "Seller email already in use." });
+    }
 
-async function sendLoginAlertEmail(user, req) {
-  const forwardedFor = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
-  const ipAddress = forwardedFor || req.socket?.remoteAddress || req.ip || "Unknown";
-  const userAgent = String(req.headers["user-agent"] || "Unknown device");
-  const loginTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-  const subject = "New login to your TimelessPages account";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Your TimelessPages account was just logged in successfully.</p>
-    <p><strong>Time:</strong> ${loginTime}</p>
-    <p><strong>IP Address:</strong> ${ipAddress}</p>
-    <p><strong>Device/Browser:</strong> ${userAgent}</p>
-    <p>If this was not you, please change your password immediately.</p>
-  `;
+    const seller = new Seller({
+      name,
+      email,
+      storeName,
+      password: hashPassword(password)
+    });
 
-  await sendEmail(user.email, subject, html);
-}
+    await seller.save();
 
-async function sendOtpEmail(user, otp) {
-  const subject = "Your TimelessPages verification code";
-  const html = `
-    <p>Hello ${user.name || "there"},</p>
-    <p>Your verification code is:</p>
-    <h2 style="letter-spacing: 4px;">${otp}</h2>
-    <p>This code expires in 10 minutes.</p>
-  `;
-
-  await sendEmail(user.email, subject, html);
-}
-
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log("MongoDB connected");
-    await seedAdmin();
-    await seedBooks();
-  })
-  .catch((err) => console.log("MongoDB error:", err));
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+    res.status(200).json({
+      message: "Seller account created successfully! You can now log in."
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
+app.post("/seller-login", async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-const paymentRoutes = require("./routes/payment");
-const orderRoutes = require("./routes/order");
+    const seller = await Seller.findOne({ email });
 
-app.use("/api/payment", paymentRoutes(app, requireUser));
-app.use("/api/order", orderRoutes(app, requireUser));
-app.use("/api/orders", orderRoutes(app, requireUser)); // Fallback alias for robustness
+    if (!seller || !verifyPassword(password, seller.password)) {
+      return res.status(401).json({ message: "Invalid seller credentials" });
+    }
 
+    if (seller.blocked) {
+      return res.status(403).json({ message: "Your seller account has been blocked." });
+    }
 
-app.use(express.static(frontendDir));
+    const token = createSellerToken(seller);
 
+    setSessionCookie(res, SELLER_SESSION_COOKIE, token, getSessionCookieOptions());
+
+    res.json({
+      message: "Login successful",
+      token,
+      seller: { id: seller._id, name: seller.name, email: seller.email, storeName: seller.storeName }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get("/sellers", requireAdmin, async (req, res) => {
+  try {
+    const sellers = await Seller.find().sort({ createdAt: -1 });
+    res.json(sellers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.patch("/sellers/:id/block", requireAdmin, async (req, res) => {
+  try {
+    const seller = await Seller.findById(req.params.id);
+    if (!seller) return res.status(404).json({ message: "Seller not found" });
+    seller.blocked = !seller.blocked;
+    await seller.save();
+    res.json({ message: seller.blocked ? "Seller blocked" : "Seller unblocked", blocked: seller.blocked });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.delete("/sellers/:id", requireAdmin, async (req, res) => {
+  try {
+    const deleted = await Seller.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "Seller not found" });
+    // Also delete their books? I will just delete the seller for now
+    res.json({ message: "Seller deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // USER MANAGEMENT (ADMIN ONLY)
 app.get("/users", requireAdmin, async (req, res) => {
@@ -951,8 +878,8 @@ app.get("/books", async (req, res) => {
     const limit = Number(req.query.limit);
     const sellerId = String(req.query.sellerId || "").trim();
 
-    if (category) {
-      query.category = category;
+    if (category === "science") {
+      endpoint = "/books/science";
     }
 
     if (featured === "true") {

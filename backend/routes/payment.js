@@ -9,7 +9,6 @@ module.exports = function (app, requireUser) {
 
   // 1. Create Stripe Checkout Session
   router.post("/create-checkout-session", requireUser, async (req, res) => {
-    console.log("Create Checkout Session Request Received:", req.body);
     try {
       const { items, shippingDetails } = req.body;
       if (!items || items.length === 0) return res.status(400).json({ message: "Cart is empty" });
@@ -100,11 +99,11 @@ module.exports = function (app, requireUser) {
         const payment = await Payment.findOneAndUpdate(
           { stripeSessionId: session.id },
           { status: "success", paymentId: session.payment_intent },
-          { new: true }
+          { returnDocument: 'after' }
         );
 
         // Update User isPaid status
-        const user = await User.findByIdAndUpdate(userId, { isPaid: true }, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { isPaid: true }, { returnDocument: 'after' });
 
         if (user && payment) {
           // Send Receipt Email
