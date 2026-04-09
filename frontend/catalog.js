@@ -125,7 +125,7 @@ function updateNavSession() {
   sessionBox.innerHTML = `
     <div class="user-session" id="userSession">
       ${session.isAdminLoggedIn ? '<a href="admin.html" class="session-link">Admin Panel</a>' : ""}
-      <a href="orders.html" class="session-link">Orders</a>
+      <a href="dashboard.html" class="session-link">Dashboard</a>
       <span class="user-greeting">Hi, ${displayName}</span>
       <button type="button" class="logout-btn" id="logoutButton">Logout</button>
     </div>
@@ -185,66 +185,66 @@ async function loadBooks() {
     return;
   }
 
-  const grid = document.querySelector(".product-grid");
+  const grids = document.querySelectorAll(".product-grid");
 
-  if (!grid) {
+  if (grids.length === 0) {
     return;
   }
 
-  const fallbackMarkup = grid.innerHTML.trim();
-  const category = document.body.dataset.bookCategory || "";
-  const featured = document.body.dataset.featuredBooks || "";
-  const limit = document.body.dataset.bookLimit || "";
-  const compactBooks = document.body.dataset.compactBooks === "true";
-  const params = new URLSearchParams();
+  grids.forEach(async (grid) => {
+    const fallbackMarkup = grid.innerHTML.trim();
+    const category = grid.dataset.bookCategory || document.body.dataset.bookCategory || "";
+    const featured = grid.dataset.featuredBooks || document.body.dataset.featuredBooks || "";
+    const limit = grid.dataset.bookLimit || document.body.dataset.bookLimit || "";
+    const compactBooks = grid.dataset.compactBooks === "true" || document.body.dataset.compactBooks === "true";
+    const params = new URLSearchParams();
 
-  if (category) params.set("category", category);
-  if (featured) params.set("featured", featured);
-  if (limit) params.set("limit", limit);
+    if (category) params.set("category", category);
+    if (featured) params.set("featured", featured);
+    if (limit) params.set("limit", limit);
 
-  if (!fallbackMarkup) {
-    grid.innerHTML = '<p class="catalog-status">Loading books...</p>';
-  }
-
-  try {
-    let endpoint = "/books";
-    if (category === "science") {
-      endpoint = "/books/science";
-    } else if (params.toString()) {
-      endpoint += `?${params.toString()}`;
+    if (!fallbackMarkup) {
+      grid.innerHTML = '<p class="catalog-status">Loading books...</p>';
     }
 
-    const { response, data: books } = await requestJson(endpoint);
+    try {
+      let endpoint = "/books";
+      if (params.toString()) {
+        endpoint += `?${params.toString()}`;
+      }
 
-    if (!Array.isArray(books)) {
-      throw new Error(books?.message || "Could not load books");
-    }
+      const { response, data: books } = await requestJson(endpoint);
 
-    if (!response.ok) {
-      throw new Error("Could not load books");
-    }
+      if (!Array.isArray(books)) {
+        throw new Error(books?.message || "Could not load books");
+      }
 
-    if (books.length === 0) {
+      if (!response.ok) {
+        throw new Error("Could not load books");
+      }
+
+      if (books.length === 0) {
+        if (fallbackMarkup) {
+          grid.innerHTML = fallbackMarkup;
+        } else {
+          grid.innerHTML = '<p class="catalog-status">No books available right now.</p>';
+        }
+        return;
+      }
+
+      const dynamicHtml = books.map((book) => (
+        compactBooks ? renderCompactCard(book) : renderFullCard(book)
+      )).join("");
+
+      grid.innerHTML = dynamicHtml;
+    } catch (error) {
       if (fallbackMarkup) {
         grid.innerHTML = fallbackMarkup;
-      } else {
-        grid.innerHTML = '<p class="catalog-status">No books available right now.</p>';
+        return;
       }
-      return;
+      grid.innerHTML = `<p class="catalog-status">${error.message || "Something went wrong while loading books."}</p>`;
     }
-
-    const dynamicHtml = books.map((book) => (
-      compactBooks ? renderCompactCard(book) : renderFullCard(book)
-    )).join("");
-
-    grid.innerHTML = dynamicHtml + (fallbackMarkup ? fallbackMarkup : "");
-  } catch (error) {
-    if (fallbackMarkup) {
-      grid.innerHTML = fallbackMarkup;
-      return;
-    }
-    grid.innerHTML = `<p class="catalog-status">${error.message || "Something went wrong while loading books."}</p>`;
-  }
+  });
 }
 
 const CART_KEY = 'cart';
@@ -1000,6 +1000,33 @@ function addCartToNav() {
   updateCartBadge();
 }
 
+async function loadMarqueeBooks() {
+  const marqueeInner = document.getElementById('marqueeInner');
+  if (!marqueeInner) return;
+
+  try {
+    const { data: books } = await requestJson('/books?limit=10');
+    if (!Array.isArray(books) || books.length === 0) return;
+
+    // Double for seamless loop
+    const displayBooks = [...books, ...books];
+
+    marqueeInner.innerHTML = displayBooks.map(book => `
+      <div class="marquee-item" onclick="window.location.href='book.html?id=${book._id}'">
+        <img src="${book.imageUrl}" alt="${book.title}" loading="lazy">
+        <div class="marquee-overlay">
+          <p>${book.title}</p>
+        </div>
+      </div>
+    `).join('');
+
+    const duration = (displayBooks.length / 2) * 3500; 
+    marqueeInner.style.animationDuration = `${duration}ms`;
+  } catch (error) {
+    console.warn("Marquee load failed:", error.message);
+  }
+}
+
 function fixMissingButtons() {
   const cards = document.querySelectorAll('.product-card, .book-tile');
   cards.forEach(card => {
@@ -1039,6 +1066,7 @@ function initGlobalCart() {
   injectCartDrawer();
   fixMissingButtons();
   updateCartBadge();
+  loadMarqueeBooks();
 
   // Re-run fix and badge update after books load
   loadBooks().then(() => {

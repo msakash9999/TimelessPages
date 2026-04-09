@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | TimelessPages</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="darkmode.js"></script>
+</head>
+<body data-theme="light">
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <a href="index.html" style="text-decoration: none; color: #fff; font-size: 22px; font-weight: 700;">
+                    <span style="color: #f58117;">Timeless</span>Pages
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i data-lucide="user"></i>
+                        My Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="orders.html" class="nav-link">
+                        <i data-lucide="package"></i>
+                        My Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i data-lucide="map-pin"></i>
+                        Addresses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i data-lucide="settings"></i>
+                        Settings
+                    </a>
+                </li>
+                
+                <li class="nav-item" style="margin-top: auto;">
+                    <a href="#" class="nav-link logout" id="logoutBtn">
+                        <i data-lucide="log-out"></i>
+                        Log Out
+                    </a>
+                </li>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="breadcrumbs">
+                Home <span>/</span> Account <span>/</span> My Profile
+            </div>
+
+            <div class="content-header">
+                <div>
+                    <h1>Personal Information</h1>
+                    <p>Manage your details and preferences here.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="edit-profile-btn" id="editBtn">Edit Profile</button>
+                    <button class="edit-profile-btn" id="cancelBtn" style="display: none; border-color: #e74c3c; color: #e74c3c;">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Profile Summary Card -->
+            <section class="profile-summary-card">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" alt="Avatar" class="profile-avatar" id="userAvatar">
+                
+                <div class="profile-info">
+                    <h2 id="displayUserName">Jane Doe</h2>
+                    <div class="profile-email">
+                        <i data-lucide="mail"></i>
+                        <span id="displayUserEmail">jane@example.com</span>
+                        <span class="verified-badge">
+                            <i data-lucide="check-circle-2"></i>
+                            Verified Member
+                        </span>
+                    </div>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Orders</div>
+                        <div class="stat-value">12</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Rewards</div>
+                        <div class="stat-value rewards">450</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Information Form -->
+            <section class="info-section">
+                <h3>Contact Details</h3>
+                <div class="info-grid">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="user"></i>
+                            <input type="text" id="inputName" value="Jane Doe" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail"></i>
+                            <input type="email" id="inputEmail" value="jane@example.com" readonly>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="phone"></i>
+                            <input type="tel" id="inputPhone" value="+1 (555) 123-4567" readonly>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        let isEditMode = false;
+        const editBtn = document.getElementById('editBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const inputs = ['inputName', 'inputEmail', 'inputPhone'];
+
+        // Populate User Data
+        async function loadUserData() {
+            try {
+                // Try fetching from localStorage first for instant response
+                const cachedName = localStorage.getItem("timelessPagesUserName");
+                const cachedEmail = localStorage.getItem("timelessPagesUserEmail");
+                
+                if (cachedName) {
+                    document.getElementById('displayUserName').textContent = cachedName;
+                    document.getElementById('inputName').value = cachedName;
+                }
+                if (cachedEmail) {
+                    document.getElementById('displayUserEmail').textContent = cachedEmail;
+                    document.getElementById('inputEmail').value = cachedEmail;
+                }
+
+                const token = localStorage.getItem("timelessPagesUserToken");
+                if (!token) return;
+
+                // Try fetching fresh data from API
+                const response = await fetch('/api/user/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('displayUserName').textContent = user.name;
+                    document.getElementById('displayUserEmail').textContent = user.email;
+                    document.getElementById('inputName').value = user.name;
+                    document.getElementById('inputEmail').value = user.email;
+                    document.getElementById('inputPhone').value = user.phone || "";
+                    
+                    // Update localStorage in case it was stale
+                    localStorage.setItem("timelessPagesUserName", user.name);
+                    localStorage.setItem("timelessPagesUserEmail", user.email);
+                }
+            } catch (err) {
+                console.warn("Could not fetch fresh profile data:", err);
+            }
+        }
+
+        function toggleEditMode(enable) {
+            isEditMode = enable;
+            editBtn.textContent = enable ? 'Save Changes' : 'Edit Profile';
+            editBtn.style.backgroundColor = enable ? '#2ecc71' : '';
+            editBtn.style.color = enable ? '#fff' : '';
+            cancelBtn.style.display = enable ? 'block' : 'none';
+
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.readOnly = !enable;
+                input.style.backgroundColor = enable ? '#fff' : '';
+            });
+
+            if (enable) {
+                document.getElementById('inputName').focus();
+            }
+        }
+
+        editBtn.addEventListener('click', async () => {
+            if (!isEditMode) {
+                toggleEditMode(true);
+            } else {
+                await saveProfile();
+            }
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            toggleEditMode(false);
+            loadUserData(); // Revert values
+        });
+
+        async function saveProfile() {
+            const name = document.getElementById('inputName').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+            const phone = document.getElementById('inputPhone').value.trim();
+
+            if (!name || !email) {
+                alert("Name and Email are required.");
+                return;
+            }
+
+            const token = localStorage.getItem("timelessPagesUserToken");
+            if (!token) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            editBtn.disabled = true;
+            editBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch('/api/user/profile', {
+                    method: 'PATCH',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, email, phone })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update UI
+                    document.getElementById('displayUserName').textContent = name;
+                    document.getElementById('displayUserEmail').textContent = email;
+                    
+                    // Update LocalStorage
+                    localStorage.setItem("timelessPagesUserName", name);
+                    localStorage.setItem("timelessPagesUserEmail", email);
+                    
+                    toggleEditMode(false);
+                    alert("Profile updated successfully!");
+                } else if (response.status === 401) {
+                    alert("Unauthorized. Your session may have expired.");
+                } else {
+                    alert(data.message || "Failed to update profile.");
+                }
+            } catch (err) {
+                alert("Network error. Could not save changes.");
+            } finally {
+                editBtn.disabled = false;
+                editBtn.textContent = isEditMode ? 'Save Changes' : 'Edit Profile';
+            }
+        }
+
+        // Logout Logic
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const keysToRemove = [
+                "timelessPagesLoggedIn",
+                "timelessPagesUserName",
+                "timelessPagesUserEmail",
+                "timelessPagesUserToken"
+            ];
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            window.location.href = "index.html";
+        });
+
+        // Load on start
+        window.addEventListener('DOMContentLoaded', loadUserData);
+    </script>
+</body>
+</html>

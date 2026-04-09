@@ -12,6 +12,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="darkmode.css">
+    <link rel="stylesheet" href="marquee.css">
     <script src="darkmode.js"></script>
 </head>
 
@@ -57,6 +58,17 @@
             <img src="https://covers.openlibrary.org/b/id/240727-M-L.jpg" alt="Treasure Island vintage cover"
                 class="hero-book">
             <div class="star-badge">*</div>
+        </section>
+
+        <!-- Book Advertisement Marquee -->
+        <section class="marquee-section">
+            <div class="marquee-container" id="bookMarquee">
+                <div class="marquee-gradient left"></div>
+                <div class="marquee-inner" id="marqueeInner">
+                    <!-- Books will be loaded dynamically here -->
+                </div>
+                <div class="marquee-gradient right"></div>
+            </div>
         </section>
 
         <section id="popular" class="catalog">
