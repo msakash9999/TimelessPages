@@ -152,29 +152,49 @@ function formatPrice(price) {
   }).format(Number(price || 0));
 }
 
-function renderCompactCard(book) {
+function renderArrivalCard(book) {
+  const inStock = book.inStock !== false;
   return `
-    <article class="product-card" data-id="${book._id || ''}" data-title="${encodeURIComponent(book.title || '')}" data-author="${encodeURIComponent(book.author || '')}" data-price="${book.price || 0}" data-img="${encodeURIComponent(book.imageUrl || '')}">
+    <a href="book.html?id=${book._id}" class="arrival-card ${inStock ? '' : 'out-of-stock'}">
+      <div class="arrival-img-wrapper">
+        <img src="${book.imageUrl}" alt="${book.title}">
+        ${inStock ? '' : '<div class="out-of-stock-overlay"><span>Out of Stock</span></div>'}
+      </div>
+      <h3>${book.title}</h3>
+      <p class="arrival-price">${formatPrice(book.price)}</p>
+    </a>
+  `;
+}
+
+function renderCompactCard(book) {
+  const inStock = book.inStock !== false;
+  return `
+    <article class="product-card ${inStock ? '' : 'out-of-stock'}" data-id="${book._id || ''}" data-title="${encodeURIComponent(book.title || '')}" data-author="${encodeURIComponent(book.author || '')}" data-price="${book.price || 0}" data-img="${encodeURIComponent(book.imageUrl || '')}">
       <img src="${book.imageUrl}" alt="${book.title}">
       <h3>${book.title}</h3>
       <p>${book.description || book.author}</p>
       <strong>${formatPrice(book.price)}</strong>
+      ${inStock ? '' : '<span class="out-of-stock-badge-small">Sold Out</span>'}
     </article>
   `;
 }
 
 function renderFullCard(book) {
+  const inStock = book.inStock !== false;
   return `
-    <article class="product-card" data-id="${book._id || ''}" data-title="${encodeURIComponent(book.title || '')}" data-author="${encodeURIComponent(book.author || '')}" data-price="${book.price || 0}" data-img="${encodeURIComponent(book.imageUrl || '')}">
+    <article class="product-card ${inStock ? '' : 'out-of-stock'}" data-id="${book._id || ''}" data-title="${encodeURIComponent(book.title || '')}" data-author="${encodeURIComponent(book.author || '')}" data-price="${book.price || 0}" data-img="${encodeURIComponent(book.imageUrl || '')}">
       <button type="button" class="wishlist-top" aria-label="Add to wishlist">&#9825;</button>
-      <img src="${book.imageUrl}" alt="${book.title}" loading="lazy">
+      <div class="card-img-wrapper">
+        <img src="${book.imageUrl}" alt="${book.title}" loading="lazy">
+        ${inStock ? '' : '<div class="out-of-stock-overlay"><span>Out of Stock</span></div>'}
+      </div>
       <h3>${book.title}</h3>
       <p class="author">${book.author}</p>
       <div class="card-description">${book.description || ''}</div>
       <strong>${formatPrice(book.price)}</strong>
       <div class="storybook-actions">
-        <button type="button" class="storybook-btn buy-btn">Buy Now</button>
-        <button type="button" class="storybook-btn cart-btn">Add to Cart</button>
+        <button type="button" class="storybook-btn buy-btn" ${inStock ? '' : 'disabled'}>Buy Now</button>
+        <button type="button" class="storybook-btn cart-btn" ${inStock ? '' : 'disabled'}>Add to Cart</button>
       </div>
     </article>
   `;
@@ -185,7 +205,7 @@ async function loadBooks() {
     return;
   }
 
-  const grids = document.querySelectorAll(".product-grid");
+  const grids = document.querySelectorAll(".product-grid, .dynamic-arrivals");
 
   if (grids.length === 0) {
     return;
@@ -193,9 +213,10 @@ async function loadBooks() {
 
   grids.forEach(async (grid) => {
     const fallbackMarkup = grid.innerHTML.trim();
+    const isArrivals = grid.classList.contains("dynamic-arrivals");
     const category = grid.dataset.bookCategory || document.body.dataset.bookCategory || "";
     const featured = grid.dataset.featuredBooks || document.body.dataset.featuredBooks || "";
-    const limit = grid.dataset.bookLimit || document.body.dataset.bookLimit || "";
+    const limit = grid.dataset.bookLimit || document.body.dataset.bookLimit || (isArrivals ? "4" : "");
     const compactBooks = grid.dataset.compactBooks === "true" || document.body.dataset.compactBooks === "true";
     const params = new URLSearchParams();
 
@@ -232,9 +253,10 @@ async function loadBooks() {
         return;
       }
 
-      const dynamicHtml = books.map((book) => (
-        compactBooks ? renderCompactCard(book) : renderFullCard(book)
-      )).join("");
+      const dynamicHtml = books.map((book) => {
+        if (isArrivals) return renderArrivalCard(book);
+        return compactBooks ? renderCompactCard(book) : renderFullCard(book);
+      }).join("");
 
       grid.innerHTML = dynamicHtml;
     } catch (error) {
@@ -461,12 +483,62 @@ function injectCartDrawer() {
     .tp-checkbox:hover {
       border-color: #8B7355;
     }
-    .cd-item.unselected {
-      opacity: 0.6;
-    }
     .cd-item.unselected img {
       filter: grayscale(1);
     }
+    
+    /* Out of Stock Styling */
+    .out-of-stock {
+      position: relative;
+    }
+    .out-of-stock img {
+      opacity: 0.6;
+      filter: grayscale(0.4);
+    }
+    .out-of-stock .storybook-btn:disabled {
+      background: #444 !important;
+      color: #777 !important;
+      cursor: not-allowed;
+      border-color: #555 !important;
+    }
+    .out-of-stock-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 150px;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      border-radius: 12px;
+      pointer-events: none;
+    }
+    .out-of-stock-overlay span {
+      background: #e74c3c;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .out-of-stock-badge-small {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #e74c3c;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .card-img-wrapper { position: relative; }
   `;
   document.head.appendChild(style);
 
@@ -1000,31 +1072,43 @@ function addCartToNav() {
   updateCartBadge();
 }
 
-async function loadMarqueeBooks() {
+const REEL_BOOKS = [
+  { _id: "65f1a1b2c3d4e5f6a1b2c3d1", title: "War and Peace", imageUrl: "https://covers.openlibrary.org/b/isbn/9780140447934-M.jpg", category: "Novels" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3d2", title: "Jane Eyre", imageUrl: "https://covers.openlibrary.org/b/isbn/9780141441146-M.jpg", category: "Novels" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3d5", title: "Anna Karenina", imageUrl: "https://covers.openlibrary.org/b/isbn/9780143035008-M.jpg", category: "Novels" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3e1", title: "The Alchemist", imageUrl: "https://covers.openlibrary.org/b/isbn/9780062315007-M.jpg", category: "Story" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3f1", title: "Meditations", imageUrl: "https://covers.openlibrary.org/b/isbn/9780812968255-M.jpg", category: "Philosophy" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c4a1", title: "Origin of Species", imageUrl: "https://covers.openlibrary.org/b/isbn/9780140432053-M.jpg", category: "Science" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c5a1", title: "Sapiens", imageUrl: "https://covers.openlibrary.org/b/isbn/9780062316110-M.jpg", category: "History" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c6a1", title: "Watchmen", imageUrl: "https://covers.openlibrary.org/b/isbn/9780930289232-M.jpg", category: "Comics" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3da", title: "1984", imageUrl: "https://covers.openlibrary.org/b/isbn/9780451524935-M.jpg", category: "Novels" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3e9", title: "Siddhartha", imageUrl: "https://covers.openlibrary.org/b/isbn/9780553208849-M.jpg", category: "Story" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3f5", title: "Beyond Good and Evil", imageUrl: "https://covers.openlibrary.org/b/isbn/9780679724650-M.jpg", category: "Philosophy" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3e2", title: "The Little Prince", imageUrl: "https://covers.openlibrary.org/b/isbn/9780156012195-M.jpg", category: "Story" }
+];
+
+function loadMarqueeBooks() {
   const marqueeInner = document.getElementById('marqueeInner');
   if (!marqueeInner) return;
 
-  try {
-    const { data: books } = await requestJson('/books?limit=10');
-    if (!Array.isArray(books) || books.length === 0) return;
+  // Use static REEL_BOOKS for reliability
+  const books = REEL_BOOKS;
+  const displayBooks = [...books, ...books]; // Double for seamless loop
 
-    // Double for seamless loop
-    const displayBooks = [...books, ...books];
-
-    marqueeInner.innerHTML = displayBooks.map(book => `
-      <div class="marquee-item" onclick="window.location.href='book.html?id=${book._id}'">
-        <img src="${book.imageUrl}" alt="${book.title}" loading="lazy">
-        <div class="marquee-overlay">
-          <p>${book.title}</p>
-        </div>
+  marqueeInner.innerHTML = displayBooks.map(book => `
+    <div class="marquee-item" onclick="window.location.href='book.html?id=${book._id}'">
+      <span class="marquee-category">${book.category || 'Classic'}</span>
+      <img src="${book.imageUrl}" alt="${book.title}" 
+           onerror="this.src='https://images.unsplash.com/photo-1543004218-ee141104308a?q=80&w=500&auto=format&fit=crop'"
+           loading="lazy">
+      <div class="marquee-overlay">
+        <p>${book.title}</p>
       </div>
-    `).join('');
+    </div>
+  `).join('');
 
-    const duration = (displayBooks.length / 2) * 3500; 
-    marqueeInner.style.animationDuration = `${duration}ms`;
-  } catch (error) {
-    console.warn("Marquee load failed:", error.message);
-  }
+  const duration = (displayBooks.length / 2) * 4500; // Slower, premium scroll
+  marqueeInner.style.animationDuration = `${duration}ms`;
 }
 
 function fixMissingButtons() {
@@ -1061,6 +1145,9 @@ function fixMissingButtons() {
 }
 
 function initGlobalCart() {
+  if (window._tp_initialized) return;
+  window._tp_initialized = true;
+
   updateNavSession();
   addCartToNav();
   injectCartDrawer();
@@ -1079,8 +1166,6 @@ function initGlobalCart() {
 // Initial Run
 initGlobalCart();
 
-document.addEventListener('DOMContentLoaded', () => {
-  initGlobalCart();
-  // Extra check for dynamic content
-  setTimeout(initGlobalCart, 500);
-});
+document.addEventListener('DOMContentLoaded', initGlobalCart);
+// Extra check for dynamic content
+setTimeout(initGlobalCart, 500);

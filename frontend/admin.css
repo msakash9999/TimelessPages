@@ -291,73 +291,81 @@ body {
     color: var(--db-muted);
 }
 
-/* ── Book List ── */
-.books-list { display: grid; gap: 12px; margin-top: 14px; }
-
-.book-row {
-    display: grid;
-    grid-template-columns: 70px 1fr auto;
-    gap: 14px;
-    align-items: center;
-    padding: 14px;
-    border: 1px solid var(--db-border);
-    border-radius: 16px;
-    background: #111;
-}
-.book-row img {
-    width: 70px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 10px;
-    background: #222;
-}
-.book-row h3, .book-row p { margin: 0; }
-.book-row p { color: var(--db-muted); font-size: 13px; }
-.book-meta { display: grid; gap: 4px; }
-.book-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-.book-badge {
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: var(--db-accent-soft);
-    color: var(--db-accent);
-    font-size: 11px;
-    font-weight: 700;
+/* ── Book List & Table Overhaul ── */
+.panel-table-wrapper {
+    overflow-x: auto;
+    margin-top: 10px;
 }
 
-.delete-book-btn {
-    padding: 8px 14px;
-    border: 1px solid var(--db-red);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--db-red);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-.delete-book-btn:hover { background: rgba(231,76,60,.1); }
-
-.list-head {
+.product-cell {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
+    gap: 12px;
 }
 
-/* ── Editable Price ── */
-.price-input {
-    width: 90px;
-    padding: 6px 8px;
-    border: 1px solid var(--db-border);
+.product-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
     border-radius: 8px;
-    background: #111;
-    color: var(--db-accent);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    text-align: right;
+    border: 1px solid var(--db-border);
+    background: #222;
 }
-.price-input:focus { border-color: var(--db-accent); outline: none; }
+
+.product-name {
+    font-weight: 600;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Premium Toggle Switch ── */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 50px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #333;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 34px;
+    border: 1px solid var(--db-border);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: var(--db-blue);
+    border-color: var(--db-blue);
+}
+
+.toggle-input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -365,4 +373,13 @@ body {
     .main-content { margin-left: 0; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+    .product-name {
+        max-width: 120px;
+    }
 }

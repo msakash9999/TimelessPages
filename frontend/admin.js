@@ -333,22 +333,34 @@
   /* ══════════════════════════════════
      BOOKS / PRODUCTS
      ══════════════════════════════════ */
+  /* ══════════════════════════════════
+     BOOKS / PRODUCTS (Table View)
+     ══════════════════════════════════ */
   function renderBookRow(book) {
-    return '<article class="book-row">' +
-      '<img src="' + book.imageUrl + '" alt="' + book.title + '">' +
-      '<div class="book-meta">' +
-        '<h3>' + book.title + '</h3>' +
-        '<p>' + book.author + '</p>' +
-        '<div class="book-badges">' +
-          '<span class="book-badge">' + book.category + '</span>' +
-          '<span class="book-badge">' + formatPrice(book.price) + '</span>' +
-          (book.featured ? '<span class="book-badge">Featured</span>' : '') +
+    var inStock = book.inStock !== false; // Default to true if undefined
+    return '<tr>' +
+      '<td>' +
+        '<div class="product-cell">' +
+          '<img src="' + book.imageUrl + '" alt="' + book.title + '" class="product-thumb">' +
+          '<span class="product-name">' + book.title + '</span>' +
         '</div>' +
-      '</div>' +
-      '<div class="action-group">' +
-        '<button class="delete-book-btn" data-book-id="' + book._id + '">Delete</button>' +
-      '</div>' +
-    '</article>';
+      '</td>' +
+      '<td>' +
+        '<span class="book-badge">' + book.category + '</span>' +
+      '</td>' +
+      '<td class="hide-mobile">' +
+        '<strong>' + formatPrice(book.price) + '</strong>' +
+      '</td>' +
+      '<td>' +
+        '<label class="toggle-switch">' +
+          '<input type="checkbox" class="toggle-input" ' + (inStock ? 'checked' : '') + ' data-action="toggle-stock" data-id="' + book._id + '">' +
+          '<div class="toggle-slider"></div>' +
+        '</label>' +
+      '</td>' +
+      '<td>' +
+        '<button class="btn-sm btn-danger" data-action="delete-book" data-id="' + book._id + '">Delete</button>' +
+      '</td>' +
+    '</tr>';
   }
 
   async function loadAdminBooks() {
@@ -358,35 +370,63 @@
       var books = result.data;
       if (!Array.isArray(books)) throw new Error(books?.message || 'Could not load books');
       if (!result.response.ok) throw new Error('Could not load books');
+
       if (books.length === 0) {
-        booksList.innerHTML = '';
-        setMsg(booksMessage, 'No books found in database.');
+        booksList.innerHTML = '<tr><td colspan="5" style="color:var(--db-muted); text-align:center; padding: 40px;">No books found in database.</td></tr>';
+        setMsg(booksMessage, 'No books found.');
         updateStats(0);
         return;
       }
+
       booksList.innerHTML = books.map(renderBookRow).join('');
       setMsg(booksMessage, books.length + ' books loaded.');
       updateStats(books.length);
-      document.querySelectorAll('.delete-book-btn').forEach(function (btn) {
+
+      // Bind Delete Buttons
+      booksList.querySelectorAll('[data-action="delete-book"]').forEach(function (btn) {
         btn.addEventListener('click', async function () {
-          var bookId = this.getAttribute('data-book-id');
+          if (!confirm('Permanently delete this book?')) return;
+          var bookId = this.getAttribute('data-id');
+          this.disabled = true;
+          this.textContent = '...';
           try {
             var del = await requestJson('/books/' + bookId, {
               method: 'DELETE',
               headers: { Authorization: 'Bearer ' + adminToken }
             });
             if (!del.response.ok) throw new Error(del.data?.message || 'Failed to delete');
-            setMsg(booksMessage, 'Book deleted.');
+            setMsg(booksMessage, 'Book deleted successfully.');
             addActivity('Admin', 'Admin', 'Deleted book');
-            loadAdminBooks();
-          } catch (e) { setMsg(booksMessage, e.message || 'Delete failed.', true); }
+            await loadAdminBooks();
+          } catch (e) { 
+            setMsg(booksMessage, e.message || 'Delete failed.', true); 
+            this.disabled = false;
+            this.textContent = 'Delete';
+          }
         });
       });
+
+      // Bind Toggle Switches
+      booksList.querySelectorAll('[data-action="toggle-stock"]').forEach(function (toggle) {
+        toggle.addEventListener('change', async function () {
+          var bookId = this.getAttribute('data-id');
+          var originalState = !this.checked;
+          try {
+            var res = await requestJson('/books/' + bookId + '/stock', {
+              method: 'PATCH',
+              headers: { Authorization: 'Bearer ' + adminToken }
+            });
+            if (!res.response.ok) throw new Error(res.data?.message || 'Failed to toggle status');
+            addActivity('Admin', 'Admin', 'Toggled stock for book');
+          } catch (e) {
+            alert('Error updating stock: ' + e.message);
+            this.checked = originalState; // Revert UI on error
+          }
+        });
+      });
+
     } catch (e) {
-      booksList.innerHTML = '';
-      var apiUrl = localStorage.getItem('timelessPagesApiBaseUrl') || 'http://localhost:5000';
-      var msg = e instanceof TypeError ? 'Cannot reach backend at ' + apiUrl : (e.message || 'Could not load books.');
-      setMsg(booksMessage, msg, true);
+      booksList.innerHTML = '<tr><td colspan="5" style="color:var(--db-red); text-align:center; padding: 20px;">' + (e.message || 'Error loading books') + '</td></tr>';
       updateStats(0);
     }
   }

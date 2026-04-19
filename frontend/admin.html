@@ -151,7 +151,22 @@
                     <button class="secondary-btn" id="refreshBooksButton">Refresh</button>
                 </div>
                 <p id="booksMessage" class="panel-message" aria-live="polite"></p>
-                <div id="booksList" class="books-list"></div>
+                <div class="panel-table-wrapper">
+                    <table class="data-table" id="booksTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th class="hide-mobile">Price</th>
+                                <th>In Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksList">
+                            <!-- Books will be injected here as table rows -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
