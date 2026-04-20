@@ -101,41 +101,65 @@
             return;
         }
 
-        ordersList.innerHTML = orders.map(order => `
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="order-header-info">
-                        <span>Order Date</span>
-                        <p>${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    </div>
-                    <div class="order-header-info">
-                        <span>Total Amount</span>
-                        <p>₹${order.totalAmount}</p>
-                    </div>
-                    <div class="order-header-info">
-                        <span>Order ID</span>
-                        <p>#${order._id.slice(-8).toUpperCase()}</p>
-                    </div>
-                    <div class="order-header-info">
-                        <span>Status</span>
-                        <p><span class="order-status-badge status-${(order.orderStatus || 'confirmed').toLowerCase()}">${order.orderStatus || 'Confirmed'}</span></p>
-                    </div>
-                </div>
-                <div class="order-body">
-                    <div class="order-items">
-                        ${(order.products || []).map(item => `
-                            <div class="order-item">
-                                <img src="${item.image || item.imageUrl || 'assets/placeholder.png'}" alt="${item.title}" onerror="this.src='assets/placeholder.png'">
-                                <div class="order-item-info">
-                                    <h4>${item.title}</h4>
-                                    <p>Qty: ${item.qty} • ₹${item.price} each</p>
-                                </div>
-                            </div>
-                        `).join('')}
+        // Flatten all products from all orders for the table view
+        const allOrderedProducts = [];
+        orders.forEach(order => {
+            (order.products || []).forEach(item => {
+                allOrderedProducts.push({
+                    name: item.title || item.name,
+                    category: item.category || 'Books',
+                    price: item.price,
+                    image: item.image || item.imageUrl || 'assets/placeholder.png',
+                    orderId: order._id.slice(-8).toUpperCase(),
+                    orderDate: new Date(order.createdAt).toLocaleDateString(),
+                    inStock: true // Static as requested in UI
+                });
+            });
+        });
+
+        ordersList.innerHTML = `
+            <div class="flex-1 py-10 flex flex-col justify-between">
+                <div class="w-full">
+                    <h2 class="pb-4 text-2xl font-bold text-gray-800">Your Ordered Books</h2>
+                    <div class="flex flex-col items-center w-full overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm">
+                        <table class="md:table-auto table-fixed w-full overflow-hidden">
+                            <thead class="bg-gray-50 text-gray-900 text-sm text-left">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold truncate">Product</th>
+                                    <th class="px-6 py-4 font-semibold truncate">Category</th>
+                                    <th class="px-6 py-4 font-semibold truncate hidden md:table-cell">Price</th>
+                                    <th class="px-6 py-4 font-semibold truncate">Notification</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-gray-600">
+                                ${allOrderedProducts.map((product, index) => `
+                                    <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 flex items-center space-x-4">
+                                            <div class="flex-shrink-0 w-16 h-20 border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='assets/placeholder.png'">
+                                            </div>
+                                            <div class="flex flex-col truncate">
+                                                <span class="font-medium text-gray-900 truncate">${product.name}</span>
+                                                <span class="text-xs text-gray-400">Order #${product.orderId} • ${product.orderDate}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 capitalize">${product.category}</td>
+                                        <td class="px-6 py-4 hidden md:table-cell font-medium text-gray-900">₹${product.price}</td>
+                                        <td class="px-6 py-4">
+                                            <label class="relative inline-flex items-center cursor-pointer group">
+                                                <input type="checkbox" class="sr-only peer" ${product.inStock ? 'checked' : ''}>
+                                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-orange-500 transition-colors duration-200 ring-4 ring-transparent group-hover:ring-orange-50"></div>
+                                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-5 shadow-sm"></div>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
     }
 
     // Initialize

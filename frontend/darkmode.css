@@ -233,6 +233,14 @@
   border-radius: 14px;
 }
 
+/* Fix for invisible books in dark mode */
+[data-theme="dark"] .book-tile img,
+[data-theme="dark"] .product-card img,
+[data-theme="dark"] .storybook-card img,
+[data-theme="dark"] .featured-book {
+    mix-blend-mode: normal !important;
+}
+
 /* sections */
 [data-theme="dark"] .catalog,
 [data-theme="dark"] .section-head,

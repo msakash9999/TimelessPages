@@ -117,7 +117,7 @@
      'timelessPagesAdminName', 'timelessPagesIsAdmin'].forEach(k => localStorage.removeItem(k));
   }
 
-  function saveUserSession(name, email, token, cart = [], wishlist = []) {
+  function saveUserSession(name, email, token, cart = [], wishlist = [], profileImage = '') {
     clearAdminSession();
     localStorage.setItem('timelessPagesLoggedIn',  'true');
     localStorage.setItem('timelessPagesUserName',  name);
@@ -125,6 +125,9 @@
     localStorage.setItem('timelessPagesUserToken', token);
     localStorage.setItem('cart', JSON.stringify(cart));
     localStorage.setItem('timelessPagesWishlist', JSON.stringify(wishlist));
+    if (profileImage) {
+      localStorage.setItem('timelessPagesUserProfileImage', profileImage);
+    }
   }
 
   /* ════════════════════════════════════════
@@ -159,7 +162,7 @@
         throw new Error(data?.message || 'Login failed.');
       }
 
-      saveUserSession(data.user.name, data.user.email, data.token, data.user.cart, data.user.wishlist);
+      saveUserSession(data.user.name, data.user.email, data.token, data.user.cart, data.user.wishlist, data.user.profileImage);
       setMsg('loginMsg', '✓ Logged in! Redirecting...', 'success');
       setTimeout(() => { window.location.href = resolveNextPath('index.html'); }, 700);
 
@@ -289,7 +292,7 @@
       }
 
       resetOtpState();
-      saveUserSession(data.user.name, data.user.email, data.token, data.user.cart, data.user.wishlist);
+      saveUserSession(data.user.name, data.user.email, data.token, data.user.cart, data.user.wishlist, data.user.profileImage);
       setMsg('otpMsg', '✓ Verified! Redirecting...', 'success');
       setTimeout(() => { window.location.href = resolveNextPath('index.html'); }, 700);
     } catch (err) {

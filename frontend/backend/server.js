@@ -41,6 +41,37 @@ const ADMIN_SESSION_COOKIE = "tp_admin_session";
 const SELLER_SESSION_COOKIE = "tp_seller_session";
 
 app.use(cors());
+
+// EMERGENCY DIAGNOSTICS
+app.get("/api/ping", (req, res) => res.json({ message: "Server is Updated!" }));
+
+app.post("/api/user/avatar", requireUser, upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No image file provided" });
+
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "timelesspages/avatars" },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
+
+    const user = await User.findById(req.userSession.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.profileImage = result.secure_url;
+    await user.save();
+
+    res.json({ message: "Avatar uploaded successfully", imageUrl: result.secure_url });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 app.use((req, res, next) => {
   if (req.originalUrl === "/api/payment/webhook") {
     next();
@@ -463,7 +494,7 @@ app.post("/api/auth/register", async (req, res) => {
 
     res.status(201).json({
       message: "Registration successful. Please verify your email first.",
-      user: { name: user.name, email: user.email, phone: user.phone }
+      user: { name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -544,7 +575,7 @@ app.post("/api/auth/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { name: user.name, email: user.email, cart: user.cart, wishlist: user.wishlist }
+      user: { name: user.name, email: user.email, cart: user.cart, wishlist: user.wishlist, profileImage: user.profileImage }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -599,7 +630,7 @@ app.post("/api/auth/verify-otp", async (req, res) => {
     res.json({
       message: "OTP verified and password reset successful.",
       token,
-      user: { name: user.name, email: user.email, cart: user.cart, wishlist: user.wishlist }
+      user: { name: user.name, email: user.email, cart: user.cart, wishlist: user.wishlist, profileImage: user.profileImage }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -648,7 +679,7 @@ app.patch("/api/user/profile", requireUser, async (req, res) => {
     res.json({
       message: "Profile updated successfully",
       token,
-      user: { name: user.name, email: user.email, phone: user.phone }
+      user: { name: user.name, email: user.email, phone: user.phone, profileImage: user.profileImage }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -1013,10 +1044,6 @@ app.patch("/books/:id/stock", requireAdmin, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

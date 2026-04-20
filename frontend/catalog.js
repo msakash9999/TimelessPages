@@ -1073,7 +1073,7 @@ function addCartToNav() {
 }
 
 const REEL_BOOKS = [
-  { _id: "65f1a1b2c3d4e5f6a1b2c3d1", title: "War and Peace", imageUrl: "https://covers.openlibrary.org/b/isbn/9780140447934-M.jpg", category: "Novels" },
+  { _id: "65f1a1b2c3d4e5f6a1b2c3d1", title: "War and Peace", imageUrl: "assets/warAndPeace.png", category: "Novels" },
   { _id: "65f1a1b2c3d4e5f6a1b2c3d2", title: "Jane Eyre", imageUrl: "https://covers.openlibrary.org/b/isbn/9780141441146-M.jpg", category: "Novels" },
   { _id: "65f1a1b2c3d4e5f6a1b2c3d5", title: "Anna Karenina", imageUrl: "https://covers.openlibrary.org/b/isbn/9780143035008-M.jpg", category: "Novels" },
   { _id: "65f1a1b2c3d4e5f6a1b2c3e1", title: "The Alchemist", imageUrl: "https://covers.openlibrary.org/b/isbn/9780062315007-M.jpg", category: "Story" },

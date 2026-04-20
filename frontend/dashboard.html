@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="dashboard.css">
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="darkmode.js"></script>
 </head>
 <body data-theme="light">
@@ -21,25 +22,25 @@
             
             <nav class="sidebar-nav">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="#" class="nav-link active" data-section="profile">
                         <i data-lucide="user"></i>
                         My Profile
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="orders.html" class="nav-link">
+                    <a href="#" class="nav-link" data-section="orders">
                         <i data-lucide="package"></i>
                         My Orders
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="#" class="nav-link" data-section="addresses">
                         <i data-lucide="map-pin"></i>
                         Addresses
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="#" class="nav-link" data-section="settings">
                         <i data-lucide="settings"></i>
                         Settings
                     </a>
@@ -56,74 +57,162 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <div class="breadcrumbs">
-                Home <span>/</span> Account <span>/</span> My Profile
+            <div class="breadcrumbs" id="dashboardBreadcrumbs">
+                Home <span>/</span> Account <span>/</span> <span id="currentBreadcrumb">My Profile</span>
             </div>
 
-            <div class="content-header">
-                <div>
-                    <h1>Personal Information</h1>
-                    <p>Manage your details and preferences here.</p>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="edit-profile-btn" id="editBtn">Edit Profile</button>
-                    <button class="edit-profile-btn" id="cancelBtn" style="display: none; border-color: #e74c3c; color: #e74c3c;">Cancel</button>
-                </div>
-            </div>
-
-            <!-- Profile Summary Card -->
-            <section class="profile-summary-card">
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" alt="Avatar" class="profile-avatar" id="userAvatar">
-                
-                <div class="profile-info">
-                    <h2 id="displayUserName">Jane Doe</h2>
-                    <div class="profile-email">
-                        <i data-lucide="mail"></i>
-                        <span id="displayUserEmail">jane@example.com</span>
-                        <span class="verified-badge">
-                            <i data-lucide="check-circle-2"></i>
-                            Verified Member
-                        </span>
+            <!-- SECTION: PROFILE -->
+            <section id="section-profile" class="dashboard-section active">
+                <div class="content-header">
+                    <div>
+                        <h1>Personal Information</h1>
+                        <p>Manage your details and preferences here.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="edit-profile-btn" id="editBtn">Edit Profile</button>
+                        <button class="edit-profile-btn" id="cancelBtn" style="display: none; border-color: #e74c3c; color: #e74c3c;">Cancel</button>
                     </div>
                 </div>
 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Orders</div>
-                        <div class="stat-value">12</div>
+                <!-- Profile Summary Card -->
+                <section class="profile-summary-card">
+                    <div class="avatar-container" id="avatarContainer" style="position: relative; cursor: pointer;">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" alt="Avatar" class="profile-avatar" id="userAvatar">
+                        <div class="avatar-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; border-radius: 50%;">
+                            <i data-lucide="camera" style="color: #fff; width: 24px; height: 24px;"></i>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rewards</div>
-                        <div class="stat-value rewards">450</div>
+                    
+                    <div class="profile-info">
+                        <h2 id="displayUserName">Jane Doe</h2>
+                        <div class="profile-email">
+                            <i data-lucide="mail"></i>
+                            <span id="displayUserEmail">jane@example.com</span>
+                            <span class="verified-badge">
+                                <i data-lucide="check-circle-2"></i>
+                                Verified Member
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Orders</div>
+                            <div class="stat-value" id="statOrdersCount">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Rewards</div>
+                            <div class="stat-value rewards">450</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Detailed Information Form -->
+                <section class="info-section">
+                    <h3>Contact Details</h3>
+                    <div class="info-grid">
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="user"></i>
+                                <input type="text" id="inputName" value="Jane Doe" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="mail"></i>
+                                <input type="email" id="inputEmail" value="jane@example.com" readonly>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Phone Number</label>
+                            <div class="input-wrapper">
+                                <i data-lucide="phone"></i>
+                                <input type="tel" id="inputPhone" value="+1 (555) 123-4567" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- SECTION: ORDERS -->
+            <section id="section-orders" class="dashboard-section" style="display: none;">
+                <div class="content-header">
+                    <div>
+                        <h1>My Orders</h1>
+                        <p>Track your literary journey and past acquisitions.</p>
+                    </div>
+                </div>
+                <div id="ordersList">
+                    <div class="loading-state" style="text-align: center; padding: 40px; color: #666;">
+                        <p>Loading your orders...</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Detailed Information Form -->
-            <section class="info-section">
-                <h3>Contact Details</h3>
+            <!-- SECTION: ADDRESSES -->
+            <section id="section-addresses" class="dashboard-section" style="display: none;">
+                <div class="content-header">
+                    <div>
+                        <h1>My Addresses</h1>
+                        <p>Manage your shipping and billing locations.</p>
+                    </div>
+                    <button class="edit-profile-btn" style="background: var(--primary); color: #fff; border: 0;">Add New Address</button>
+                </div>
                 <div class="info-grid">
-                    <div class="input-group">
-                        <label>Full Name</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="user"></i>
-                            <input type="text" id="inputName" value="Jane Doe" readonly>
+                    <div class="panel-card" style="padding: 24px; border: 1px solid #eee; border-radius: 16px; position: relative;">
+                        <span style="position: absolute; top: 16px; right: 16px; font-size: 11px; background: #e8f5e9; color: #1b5e20; padding: 4px 10px; border-radius: 99px; font-weight: 600;">DEFAULT</span>
+                        <h3 style="margin-bottom: 10px;">Home Address</h3>
+                        <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                            123 Library Lane,<br>
+                            Storybrooke, ME 04011<br>
+                            United States
+                        </p>
+                        <div style="margin-top: 20px; display: flex; gap: 15px;">
+                            <a href="#" style="font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none;">Edit</a>
+                            <a href="#" style="font-size: 13px; color: #e74c3c; font-weight: 600; text-decoration: none;">Remove</a>
                         </div>
                     </div>
-                    
-                    <div class="input-group">
-                        <label>Email Address</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="mail"></i>
-                            <input type="email" id="inputEmail" value="jane@example.com" readonly>
+                    <div style="border: 2px dashed #eee; border-radius: 16px; display: grid; place-items: center; min-height: 180px; cursor: pointer; color: #aaa; transition: all 0.2s;" onmouseover="this.style.borderColor=var(--primary); this.style.color=var(--primary)" onmouseout="this.style.borderColor='#eee'; this.style.color='#aaa'">
+                        <div style="text-align: center;">
+                            <i data-lucide="plus" style="width: 32px; height: 32px; margin-bottom: 8px;"></i>
+                            <p style="font-size: 14px; font-weight: 500;">Add another address</p>
                         </div>
                     </div>
+                </div>
+            </section>
 
-                    <div class="input-group">
-                        <label>Phone Number</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="phone"></i>
-                            <input type="tel" id="inputPhone" value="+1 (555) 123-4567" readonly>
+            <!-- SECTION: SETTINGS -->
+            <section id="section-settings" class="dashboard-section" style="display: none;">
+                <div class="content-header">
+                    <div>
+                        <h1>Account Settings</h1>
+                        <p>Configure your account preferences and security.</p>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div style="display: grid; gap: 20px;">
+                        <div style="padding: 20px; border: 1px solid #eee; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h4 style="margin-bottom: 4px;">Email Notifications</h4>
+                                <p style="font-size: 13px; color: #666;">Receive updates about your orders and book recommendations.</p>
+                            </div>
+                            <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; inset: 0; background-color: var(--primary); transition: .4s; border-radius: 34px;"></span>
+                                <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 28px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                            </label>
+                        </div>
+                        <div style="padding: 20px; border: 1px solid #fdeaea; background: #fffafb; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h4 style="margin-bottom: 4px; color: #e74c3c;">Danger Zone</h4>
+                                <p style="font-size: 13px; color: #666;">Permanently delete your account and all your data.</p>
+                            </div>
+                            <button style="padding: 8px 16px; background: #e74c3c; color: #fff; border: 0; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Delete Account</button>
                         </div>
                     </div>
                 </div>
@@ -135,17 +224,50 @@
         // Initialize Icons
         lucide.createIcons();
 
+        // ── NAVIGATION LOGIC ──
+        const navLinks = document.querySelectorAll('.nav-link[data-section]');
+        const sections = document.querySelectorAll('.dashboard-section');
+        const currentBreadcrumb = document.getElementById('currentBreadcrumb');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetSection = link.getAttribute('data-section');
+                
+                // Update Sidebar
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Switch Sections
+                sections.forEach(sec => sec.style.display = 'none');
+                document.getElementById(`section-${targetSection}`).style.display = 'block';
+
+                // Update Breadcrumb
+                currentBreadcrumb.textContent = link.textContent.trim();
+
+                // Load Data if needed
+                if (targetSection === 'orders') {
+                    fetchOrders();
+                }
+            });
+        });
+
+        // ── PROFILE LOGIC ──
         let isEditMode = false;
         const editBtn = document.getElementById('editBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const inputs = ['inputName', 'inputEmail', 'inputPhone'];
 
-        // Populate User Data
         async function loadUserData() {
+            console.log("Checking backend connection...");
+            const candidates = getApiBaseCandidates();
+            candidates.forEach(c => console.log("API Candidate:", c));
+
             try {
-                // Try fetching from localStorage first for instant response
+                // 1. Instant Load from Cache
                 const cachedName = localStorage.getItem("timelessPagesUserName");
                 const cachedEmail = localStorage.getItem("timelessPagesUserEmail");
+                const cachedImage = localStorage.getItem("timelessPagesUserProfileImage");
                 
                 if (cachedName) {
                     document.getElementById('displayUserName').textContent = cachedName;
@@ -155,133 +277,304 @@
                     document.getElementById('displayUserEmail').textContent = cachedEmail;
                     document.getElementById('inputEmail').value = cachedEmail;
                 }
+                if (cachedImage) {
+                    document.getElementById('userAvatar').src = cachedImage;
+                }
 
                 const token = localStorage.getItem("timelessPagesUserToken");
                 if (!token) return;
 
-                // Try fetching fresh data from API
-                const response = await fetch('/api/user/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('displayUserName').textContent = user.name;
-                    document.getElementById('displayUserEmail').textContent = user.email;
-                    document.getElementById('inputName').value = user.name;
-                    document.getElementById('inputEmail').value = user.email;
-                    document.getElementById('inputPhone').value = user.phone || "";
-                    
-                    // Update localStorage in case it was stale
-                    localStorage.setItem("timelessPagesUserName", user.name);
-                    localStorage.setItem("timelessPagesUserEmail", user.email);
+                // 2. Fetch fresh data from API
+                const candidates = getApiBaseCandidates();
+                for (const baseUrl of candidates) {
+                    try {
+                        const response = await fetch(`${baseUrl}/api/user/profile`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (response.ok) {
+                            const user = await response.json();
+                            console.log("DEBUG: Full Profile Data from Server:", user); 
+                            
+                            document.getElementById('displayUserName').textContent = user.name;
+                            document.getElementById('displayUserEmail').textContent = user.email;
+                            document.getElementById('inputName').value = user.name;
+                            document.getElementById('inputEmail').value = user.email;
+                            document.getElementById('inputPhone').value = user.phone || "";
+                            
+                            localStorage.setItem("timelessPagesUserName", user.name);
+                            localStorage.setItem("timelessPagesUserEmail", user.email);
+                            
+                            if (user.profileImage) {
+                                console.log("Applying stored avatar:", user.profileImage);
+                                document.getElementById('userAvatar').src = user.profileImage;
+                                localStorage.setItem("timelessPagesUserProfileImage", user.profileImage);
+                            } else {
+                                console.log("No avatar found, using default.");
+                                document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200";
+                                localStorage.removeItem("timelessPagesUserProfileImage");
+                            }
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn("Fetch attempt failed for:", baseUrl);
+                    }
                 }
             } catch (err) {
-                console.warn("Could not fetch fresh profile data:", err);
+                console.error("Critical error in loadUserData:", err);
             }
         }
 
+        // ── AVATAR UPLOAD LOGIC ──
+        const avatarContainer = document.getElementById('avatarContainer');
+        const avatarInput = document.getElementById('avatarInput');
+        const userAvatar = document.getElementById('userAvatar');
+
+        avatarContainer.addEventListener('mouseenter', () => {
+            avatarContainer.querySelector('.avatar-overlay').style.opacity = '1';
+        });
+        avatarContainer.addEventListener('mouseleave', () => {
+            avatarContainer.querySelector('.avatar-overlay').style.opacity = '0';
+        });
+
+        avatarContainer.addEventListener('click', () => {
+            avatarInput.click();
+        });
+
+        avatarInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show local preview immediately
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                userAvatar.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Upload to server
+            const token = localStorage.getItem("timelessPagesUserToken");
+            if (!token) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const candidates = getApiBaseCandidates();
+            let uploadSuccess = false;
+            let lastServerError = null;
+
+            for (const baseUrl of candidates) {
+                try {
+                    console.log(`Trying upload to: ${baseUrl}/api/user/avatar`);
+                    const response = await fetch(`${baseUrl}/api/user/avatar`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        userAvatar.src = data.imageUrl;
+                        localStorage.setItem("timelessPagesUserProfileImage", data.imageUrl);
+                        uploadSuccess = true;
+                        alert("Profile picture updated!");
+                        break;
+                    } else {
+                        // If server responded but with an error, capture it
+                        const errorData = await response.json().catch(() => ({}));
+                        lastServerError = errorData.message || `Server responded with ${response.status}`;
+                    }
+                } catch (err) {
+                    console.warn(`Connection attempt failed for ${baseUrl}:`, err);
+                }
+            }
+
+            if (!uploadSuccess) {
+                const finalMsg = lastServerError 
+                    ? `Upload failed: ${lastServerError}`
+                    : "Failed to connect to any known backend server. Please ensure the backend is running on port 5000.";
+                alert(finalMsg);
+            }
+        });
+
+        // ── ORDERS LOGIC (Ported from orders.js) ──
+        const ordersList = document.getElementById('ordersList');
+
+        function getApiBaseCandidates() {
+            const savedApiBaseUrl = localStorage.getItem("timelessPagesApiBaseUrl");
+            const { protocol, hostname, port, origin } = window.location;
+            const priorityCandidates = ["http://localhost:5000", "http://127.0.0.1:5000"];
+            if (savedApiBaseUrl) priorityCandidates.push(savedApiBaseUrl.replace(/\/$/, ""));
+            if (hostname) priorityCandidates.push(`${protocol}//${hostname}:5000`);
+            return [...new Set(priorityCandidates)];
+        }
+
+        async function fetchOrders() {
+            const token = localStorage.getItem('timelessPagesUserToken');
+            if (!token) return;
+
+            const candidates = getApiBaseCandidates();
+            let lastError = null;
+
+            for (const baseUrl of candidates) {
+                try {
+                    const response = await fetch(`${baseUrl}/api/order/my-orders`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const orders = await response.json();
+                        document.getElementById('statOrdersCount').textContent = orders.length;
+                        renderOrders(orders);
+                        return;
+                    }
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+
+            ordersList.innerHTML = `<div style="text-align:center; padding:20px; color:#e74c3c">Failed to load orders. Please try again later.</div>`;
+        }
+
+        function renderOrders(orders) {
+            if (!orders || orders.length === 0) {
+                ordersList.innerHTML = `<div style="text-align:center; padding:40px; border:1px dashed #eee; border-radius:12px;">No orders found yet.</div>`;
+                return;
+            }
+
+            const allProducts = [];
+            orders.forEach(order => {
+                (order.products || []).forEach(item => {
+                    allProducts.push({
+                        ...item,
+                        orderId: order._id.slice(-8).toUpperCase(),
+                        date: new Date(order.createdAt).toLocaleDateString()
+                    });
+                });
+            });
+
+            ordersList.innerHTML = `
+                <div class="w-full mt-4">
+                    <div class="overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-gray-900 text-xs font-semibold uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-4">Product</th>
+                                    <th class="px-6 py-4">Price</th>
+                                    <th class="px-6 py-4">Order Info</th>
+                                    <th class="px-6 py-4 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-gray-600 divide-y divide-gray-100">
+                                ${allProducts.map(p => `
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 flex items-center gap-4">
+                                            <div class="w-12 h-16 bg-gray-100 rounded border border-gray-200 overflow-hidden">
+                                                <img src="${p.image || 'assets/placeholder.png'}" class="w-full h-full object-cover">
+                                            </div>
+                                            <span class="font-medium text-gray-900">${p.title || p.name}</span>
+                                        </td>
+                                        <td class="px-6 py-4">₹${p.price}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-xs text-gray-500">ID: #${p.orderId}</div>
+                                            <div class="text-xs text-gray-400">${p.date}</div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600">Confirmed</span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Rest of Profile actions...
         function toggleEditMode(enable) {
             isEditMode = enable;
             editBtn.textContent = enable ? 'Save Changes' : 'Edit Profile';
             editBtn.style.backgroundColor = enable ? '#2ecc71' : '';
             editBtn.style.color = enable ? '#fff' : '';
             cancelBtn.style.display = enable ? 'block' : 'none';
-
             inputs.forEach(id => {
                 const input = document.getElementById(id);
                 input.readOnly = !enable;
                 input.style.backgroundColor = enable ? '#fff' : '';
             });
-
-            if (enable) {
-                document.getElementById('inputName').focus();
-            }
+            if (enable) document.getElementById('inputName').focus();
         }
 
         editBtn.addEventListener('click', async () => {
-            if (!isEditMode) {
-                toggleEditMode(true);
-            } else {
-                await saveProfile();
-            }
+            if (!isEditMode) toggleEditMode(true);
+            else await saveProfile();
         });
 
         cancelBtn.addEventListener('click', () => {
             toggleEditMode(false);
-            loadUserData(); // Revert values
+            loadUserData();
         });
 
         async function saveProfile() {
             const name = document.getElementById('inputName').value.trim();
             const email = document.getElementById('inputEmail').value.trim();
             const phone = document.getElementById('inputPhone').value.trim();
-
-            if (!name || !email) {
-                alert("Name and Email are required.");
-                return;
-            }
-
             const token = localStorage.getItem("timelessPagesUserToken");
-            if (!token) {
-                alert("Session expired. Please log in again.");
-                window.location.href = "login.html";
-                return;
-            }
+            if (!token) return;
 
             editBtn.disabled = true;
             editBtn.textContent = 'Saving...';
 
             try {
-                const response = await fetch('/api/user/profile', {
-                    method: 'PATCH',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ name, email, phone })
-                });
+                const candidates = getApiBaseCandidates();
+                let saveSuccess = false;
+                for (const baseUrl of candidates) {
+                    try {
+                        const response = await fetch(`${baseUrl}/api/user/profile`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ name, email, phone })
+                        });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Update UI
-                    document.getElementById('displayUserName').textContent = name;
-                    document.getElementById('displayUserEmail').textContent = email;
-                    
-                    // Update LocalStorage
-                    localStorage.setItem("timelessPagesUserName", name);
-                    localStorage.setItem("timelessPagesUserEmail", email);
-                    
-                    toggleEditMode(false);
-                    alert("Profile updated successfully!");
-                } else if (response.status === 401) {
-                    alert("Unauthorized. Your session may have expired.");
-                } else {
-                    alert(data.message || "Failed to update profile.");
+                        if (response.ok) {
+                            const data = await response.json();
+                            const user = data.user;
+                            
+                            document.getElementById('displayUserName').textContent = user.name;
+                            document.getElementById('displayUserEmail').textContent = user.email;
+                            
+                            localStorage.setItem("timelessPagesUserName", user.name);
+                            localStorage.setItem("timelessPagesUserEmail", user.email);
+                            if (user.profileImage) {
+                                localStorage.setItem("timelessPagesUserProfileImage", user.profileImage);
+                            }
+                            
+                            toggleEditMode(false);
+                            saveSuccess = true;
+                            alert("Profile updated successfully!");
+                            break;
+                        }
+                    } catch (e) {}
                 }
+                if (!saveSuccess) alert("Failed to save profile changes.");
             } catch (err) {
-                alert("Network error. Could not save changes.");
+                alert("Error saving profile.");
             } finally {
                 editBtn.disabled = false;
                 editBtn.textContent = isEditMode ? 'Save Changes' : 'Edit Profile';
             }
         }
 
-        // Logout Logic
         document.getElementById('logoutBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            const keysToRemove = [
-                "timelessPagesLoggedIn",
-                "timelessPagesUserName",
-                "timelessPagesUserEmail",
-                "timelessPagesUserToken"
-            ];
-            keysToRemove.forEach(k => localStorage.removeItem(k));
+            localStorage.clear();
             window.location.href = "index.html";
         });
 
-        // Load on start
-        window.addEventListener('DOMContentLoaded', loadUserData);
+        window.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+            fetchOrders(); // Initial fetch to update stats
+        });
     </script>
 </body>
 </html>
